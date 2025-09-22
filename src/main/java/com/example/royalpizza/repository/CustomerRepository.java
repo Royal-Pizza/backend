@@ -10,14 +10,8 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    //Rechercher un client par son nom
-    Optional<Customer> findByLastName(String lastName);
-
     // Récupérer un client par email
     Optional<Customer> findByEmailAddress(String email);
-
-    // Vérifier si un email existe
-    boolean existsByEmailAddress(String email);
 
     // Recuperer la liste des clients administrateurs
     List<Customer> findByIsAdminTrue();
@@ -30,4 +24,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // Recuperer la liste des clients par prenom
     List<Customer> findByFirstNameContainingIgnoreCase(String firstName);
+
+    // Recuperer un client par son adresse email
+    Customer findCustomerByEmailAddress(String email);
+
+    // Supprimer un client par son email
+    void deleteByEmailAddress(String email);
 }

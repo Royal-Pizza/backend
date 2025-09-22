@@ -16,7 +16,5 @@ public class Size {
 
     @Column(nullable = false)
     private Double coeff;
-
-    // Getters et setters
 }
 
