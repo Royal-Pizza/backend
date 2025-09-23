@@ -21,6 +21,8 @@ public class Pizza {
     private BigDecimal pricePizza;
 
     @Lob
-    private byte[] image; // Pour stocker l'image
+    @Column(columnDefinition = "BYTEA")
+    private byte[] image;
+
 
 }
