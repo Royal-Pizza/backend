@@ -2,6 +2,7 @@ package com.example.royalpizza.controller;
 
 import com.example.royalpizza.entity.Pizza;
 import com.example.royalpizza.service.PizzaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,9 +11,10 @@ import java.util.List;
 @RequestMapping("/pizzas")
 public class PizzaController {
 
+    @Autowired
     private PizzaService pizzaService;
 
-    @PostMapping
+    @GetMapping
     public List<Pizza> getAllPizzas() {
         return pizzaService.getAllPizzas();
     }
