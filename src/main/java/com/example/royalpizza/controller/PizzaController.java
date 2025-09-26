@@ -20,7 +20,7 @@ public class PizzaController {
     }
 
     @GetMapping("/{idPizza}")
-    public Pizza getPizzaById(@PathVariable int idPizza) {
+    public Pizza getPizzaById(@PathVariable Long idPizza) {
         return pizzaService.getPizza(idPizza);
     }
 
