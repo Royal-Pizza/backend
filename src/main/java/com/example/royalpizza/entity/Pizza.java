@@ -20,9 +20,6 @@ public class Pizza {
     @Column(nullable = false)
     private BigDecimal pricePizza;
 
-    @Lob
     @Column(columnDefinition = "BYTEA")
     private byte[] image;
-
-
 }
