@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pizzas")
@@ -17,18 +18,14 @@ public class PizzaController {
     private PizzaService pizzaService;
 
     @GetMapping
-    public List<Pizza> getAllPizzas() {
-        return pizzaService.getAllPizzas();
+    public List<PizzaDTO> getAllPizzas() {
+        List<PizzaDTO> pizzasDto = pizzaService.getAllPizzasDTO();
+        return pizzasDto;
     }
 
     @GetMapping("/{namePizza}")
     public PizzaDTO getPizzaById(@PathVariable String namePizza) {
-        Pizza pizza = pizzaService.getPizza(namePizza);
-        PizzaDTO pizzaDTO = PizzaMapper.toDTO(pizza);
-        pizzaDTO.setIngredients(pizzaService.getIngredientsFromPizza(pizzaDTO.getIdPizza()));
-        pizzaDTO.setPricePizza(pizzaService.getPriceRangeByPizza(pizzaDTO.getIdPizza()));
-        return pizzaDTO;
+        return pizzaService.getPizzaDTO(namePizza);
     }
-
 
 }

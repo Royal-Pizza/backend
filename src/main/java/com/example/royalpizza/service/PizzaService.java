@@ -1,9 +1,11 @@
 package com.example.royalpizza.service;
 
+import com.example.royalpizza.DTO.PizzaDTO;
 import com.example.royalpizza.entity.Ingredient;
 import com.example.royalpizza.entity.OrderLine;
 import com.example.royalpizza.entity.Pizza;
 import com.example.royalpizza.entity.Size;
+import com.example.royalpizza.mapper.PizzaMapper;
 import com.example.royalpizza.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +37,15 @@ public class PizzaService {
         return pizzaRepository.findAll();
     }
 
+    public List<PizzaDTO> getAllPizzasDTO() {
+        List<Pizza> pizzas = pizzaRepository.findAll();
+        return pizzas.stream().map(pizza -> {
+            return getPizzaDTO(pizza.getIdPizza());
+        }).toList();
+    }
+
     public Pizza getPizza(Object object) {
         Optional<Pizza> pizzaOpt;
-
         if (object instanceof Long) {
             pizzaOpt = pizzaRepository.findById((Long) object);
         } else if (object instanceof String) {
@@ -45,26 +53,24 @@ public class PizzaService {
         } else {
             throw new IllegalArgumentException("Type d'identifiant non supporté pour la pizza : " + object);
         }
-
         return pizzaOpt.orElse(null);
     }
 
-    public Map<String, BigDecimal> getPriceRangeByPizza(Object idPizza) {
-        Pizza pizza = getPizza(idPizza);
-        List<Size> sizes = sizeRepository.findAll();
-        Map<String, BigDecimal> map = new HashMap<>();
-        for (Size size : sizes) {
-            map.put(size.getNameSize(), pizza.getPricePizza().multiply(BigDecimal.valueOf(size.getCoeff())).setScale(2, RoundingMode.HALF_UP));
+    public PizzaDTO getPizzaDTO(Object object) {
+        Pizza pizza = getPizza(object);
+        if (pizza != null) {
+            PizzaDTO pizzaDTO = PizzaMapper.toDTO(pizza);
+            pizzaDTO.setIngredients(getIngredientsFromPizza(pizzaDTO.getIdPizza()));
+            pizzaDTO.setPricePizza(getPriceRangeByPizza(pizzaDTO.getIdPizza()));
+            return pizzaDTO;
         }
-        return map;
+        return null;
     }
 
     public void addPizza(Pizza pizza) {
         pizzaRepository.save(pizza);
 
     }
-
-
 
     public Pizza updatePizza(Long idPizza, Pizza updatedPizza) {
 
@@ -82,7 +88,7 @@ public class PizzaService {
     }
 
     // recuperer les ingredients d'une pizza
-    public List<String> getIngredientsFromPizza(Object idPizza){
+    private List<String> getIngredientsFromPizza(Object idPizza){
         Pizza pizza = this.getPizza(idPizza);
         if (pizza != null) {
             return containRepository.findByPizzaIdPizza(pizza.getIdPizza())
@@ -91,6 +97,16 @@ public class PizzaService {
                     .toList();
         }
         return null;
+    }
+
+    private Map<String, BigDecimal> getPriceRangeByPizza(Object idPizza) {
+        Pizza pizza = getPizza(idPizza);
+        List<Size> sizes = sizeRepository.findAll();
+        Map<String, BigDecimal> map = new HashMap<>();
+        for (Size size : sizes) {
+            map.put(size.getNameSize(), pizza.getPricePizza().multiply(BigDecimal.valueOf(size.getCoeff())).setScale(2, RoundingMode.HALF_UP));
+        }
+        return map;
     }
 
     public Pizza getBestSellingPizza() {
