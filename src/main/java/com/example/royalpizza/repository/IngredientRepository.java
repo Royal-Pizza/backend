@@ -14,4 +14,5 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     // Supprimer un ingrédient par son nom
     void deleteByNameIngredient(String name);
+
 }
