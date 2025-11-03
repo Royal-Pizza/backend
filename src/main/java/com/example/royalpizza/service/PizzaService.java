@@ -87,6 +87,16 @@ public class PizzaService {
         return pizzaRepository.save(pizza);
     }
 
+    public Map<String, BigDecimal> getPriceRangeByPizza(Object idPizza) {
+        Pizza pizza = getPizza(idPizza);
+        List<Size> sizes = sizeRepository.findAll();
+        Map<String, BigDecimal> map = new HashMap<>();
+        for (Size size : sizes) {
+            map.put(size.getNameSize(), pizza.getPricePizza().multiply(BigDecimal.valueOf(size.getCoeff())).setScale(2, RoundingMode.HALF_UP));
+        }
+        return map;
+    }
+
     // recuperer les ingredients d'une pizza
     private List<String> getIngredientsFromPizza(Object idPizza){
         Pizza pizza = this.getPizza(idPizza);
@@ -99,15 +109,6 @@ public class PizzaService {
         return null;
     }
 
-    private Map<String, BigDecimal> getPriceRangeByPizza(Object idPizza) {
-        Pizza pizza = getPizza(idPizza);
-        List<Size> sizes = sizeRepository.findAll();
-        Map<String, BigDecimal> map = new HashMap<>();
-        for (Size size : sizes) {
-            map.put(size.getNameSize(), pizza.getPricePizza().multiply(BigDecimal.valueOf(size.getCoeff())).setScale(2, RoundingMode.HALF_UP));
-        }
-        return map;
-    }
 
     public Pizza getBestSellingPizza() {
         List<OrderLine> orderLines = orderLineRepository.findAll();

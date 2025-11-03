@@ -12,31 +12,48 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 public class CorsConfig {
 
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    public CorsConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
+
+    /**
+     * Configuration CORS pour autoriser Angular (localhost:4200)
+     */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")                  // tous les endpoints
-                        .allowedOrigins("http://localhost:4200") // ton frontend
-                        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS") // méthodes autorisées
-                        .allowedHeaders("*")                  // headers autorisés
-                        .allowCredentials(true);             // si tu utilises cookies ou auth
+                registry.addMapping("/**")                        // tous les endpoints
+                        .allowedOrigins("http://localhost:4200")  // ton frontend
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // méthodes autorisées
+                        .allowedHeaders("*")                      // tous les headers autorisés
+                        .allowCredentials(true);                 // si cookies/auth nécessaires
             }
         };
     }
+
+    /**
+     * Configuration Spring Security
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {}) // active la configuration CORS définie par WebMvcConfigurer
+                .csrf(csrf -> csrf.disable()) // désactive CSRF pour API REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/pizzas/**",
                                 "/customers/**"
-                        ).permitAll() // endpoints publics
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(withDefaults()); // pas besoin d'authenticationEntryPoint ici
+                .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .httpBasic(withDefaults());
+
         return http.build();
     }
+
 }

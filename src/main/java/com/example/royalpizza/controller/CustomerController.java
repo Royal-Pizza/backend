@@ -3,9 +3,12 @@ package com.example.royalpizza.controller;
 import com.example.royalpizza.DTO.LoginDTO;
 import com.example.royalpizza.DTO.NewCustomerDTO;
 import com.example.royalpizza.entity.Customer;
+import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/customers")
@@ -15,7 +18,7 @@ public class CustomerController {
     private CustomerService customerService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginDTO loginDTO) {
+    public String login(@RequestBody LoginDTO loginDTO) throws IOException, CustomerException {
         return customerService.loginCustomer(loginDTO.getEmail(), loginDTO.getPassword());
     }
 

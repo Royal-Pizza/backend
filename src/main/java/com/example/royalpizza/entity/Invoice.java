@@ -26,6 +26,6 @@ public class Invoice {
     @JoinColumn(name = "id_customer", nullable = false)
     private Customer customer;
 
-    @OneToMany(mappedBy = "invoice")
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true) // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans facture associée)
     private List<OrderLine> orderLines;
 }
