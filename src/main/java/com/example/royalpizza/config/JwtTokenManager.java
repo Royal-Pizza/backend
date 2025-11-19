@@ -15,7 +15,7 @@ import java.security.Key;
 public class JwtTokenManager {
 
     private final Key secretKey = Keys.hmacShaKeyFor("MaSuperCleSecreteJWT_Pour_RoyalPizza_2025_TresLongue!".getBytes());
-    private final long validity = 86400000; // 1 jour
+    private final long validity = 8400000; // 24 hours in milliseconds
 
 
     public String generateToken(Customer customer) {

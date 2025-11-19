@@ -11,5 +11,5 @@ import java.util.List;
 public interface OrderLineRepository extends JpaRepository<OrderLine, OrderLineId> {
 
     // Récupérer toutes les lignes d'une facture
-    List<OrderLine> findByInvoiceIdInvoice(Long invoiceId);
+    List<OrderLine> findByInvoice_IdInvoice(Long invoiceId);
 }

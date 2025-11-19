@@ -3,6 +3,7 @@ package com.example.royalpizza.service;
 import com.example.royalpizza.DTO.OrderLineDTO;
 import com.example.royalpizza.entity.*;
 import com.example.royalpizza.exception.CustomerException;
+import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.repository.InvoiceRepository;
 import com.example.royalpizza.repository.OrderLineRepository;
 import jakarta.transaction.Transactional;
@@ -37,7 +38,7 @@ public class InvoiceService {
     }
 
     public List<OrderLine> getOrderLinesByInvoiceId(Long invoiceId) {
-        return orderLineRepository.findByInvoiceIdInvoice(invoiceId);
+        return orderLineRepository.findByInvoice_IdInvoice(invoiceId);
     }
 
     public List<Invoice> getAllInvoicesByCustomer(Object customerId) {
@@ -57,13 +58,17 @@ public class InvoiceService {
                 .orElse(null);
     }
 
+
     @Transactional
-    public String purchase(HashMap<String, ArrayList<OrderLineDTO>> orders, Customer customer) {
+    public Invoice saveBasket(Map<String, List<OrderLineDTO>> orders, Customer customer){
+        Invoice invoice = invoiceRepository
+                .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer)
+                .orElseGet(Invoice::new);
         BigDecimal totalAmount = BigDecimal.ZERO;
-        List<OrderLine> listeOrderLine = new ArrayList<OrderLine>();
+        List<OrderLine> listeOrderLine = new ArrayList<>();
         for (String pizzaName : orders.keySet()) {
             Pizza pizza = pizzaService.getPizza(pizzaName);
-            ArrayList<OrderLineDTO> orderLines = orders.get(pizzaName);
+            List<OrderLineDTO> orderLines = orders.get(pizzaName);
             Map<String, BigDecimal> priceByPizza = pizzaService.getPriceRangeByPizza(pizzaName);
             for (OrderLineDTO orderLineDTO : orderLines) {
                 Size size = sizeService.getSize(orderLineDTO.getSizeName());
@@ -77,23 +82,40 @@ public class InvoiceService {
             }
         }
         if (totalAmount.compareTo(customer.getWallet()) > 0) {
-            throw new CustomerException("Fonds insuffisants pour effectuer cet achat.");
+            throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
-        customer.setWallet(customer.getWallet().subtract(totalAmount));
-        customerService.updateCustomer(customer, false);
-        Invoice invoice = new Invoice();
         invoice.setTotalAmount(totalAmount);
         invoice.setCustomer(customer);
         invoice.setDate(LocalDateTime.now());
+        invoice.setFinalized(false);
         this.saveInvoice(invoice, listeOrderLine);
-        return "Transaction réussie. Montant total : " + totalAmount + "€. Votre nouveau solde est de " + customer.getWallet() + "€.";
+        return invoice;
+    }
+
+    @Transactional
+    public String purchase(HashMap<String, List<OrderLineDTO>> orders, Customer customer) {
+        Invoice invoice = this.saveBasket(orders, customer);
+        invoice.setFinalized(true);
+        invoiceRepository.save(invoice);
+        customer.setWallet(customer.getWallet().subtract(invoice.getTotalAmount()));
+        customerService.updateCustomer(customer, false);
+        // Toujours travailler sur la collection existante
+        return "Transaction réussie. Montant total : " + invoice.getTotalAmount() + "€. Votre nouveau solde est de " + customer.getWallet() + "€.";
     }
 
     private void saveInvoice(Invoice invoice, List<OrderLine> orderLines) {
-        for( OrderLine orderLine : orderLines) {
+        for (OrderLine orderLine : orderLines) {
             orderLine.setInvoice(invoice);
         }
-        invoice.setOrderLines(orderLines);
+
+        if (invoice.getOrderLines() == null) {
+            invoice.setOrderLines(new ArrayList<>());
+        }
+
+        // Ne pas faire invoice.setOrderLines(orderLines) car cela créerait une nouvelle collection vue que orphanRemoval est à true
+        invoice.getOrderLines().clear();
+        invoice.getOrderLines().addAll(orderLines);
+
         invoiceRepository.save(invoice);
     }
 
