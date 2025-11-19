@@ -2,6 +2,8 @@ package com.example.royalpizza.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -33,6 +35,7 @@ public class Customer {
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "customer")
     private List<Invoice> invoices;
 }

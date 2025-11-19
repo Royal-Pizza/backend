@@ -9,6 +9,8 @@ public final class ErrorMessages {
     public static final String CUSTOMER_ALREADY_EXISTS = "Un client avec cet email existe déjà";
     public static final String CUSTOMER_NOT_FOUND = "Client introuvable pour l'identifiant fourni";
     public static final String INVALID_PASSWORD = "Mot de passe incorrect";
+    public static final String INSUFFICIENT_BALANCE = "Fonds insuffisants pour effectuer cet achat. Veuillez recharger votre compte.";
+    public static final String EXPIRED_TOKEN = "Le token a expiré, veuillez vous reconnecter";
     public static final String DATABASE_ACCESS_ERROR = "Erreur d'accès à la base de données, veuillez réessayer plus tard";
     public static final String INTERNAL_SERVER_ERROR = "Erreur interne du serveur";
 }

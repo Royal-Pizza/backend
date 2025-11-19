@@ -1,7 +1,7 @@
 package com.example.royalpizza.config;
 
-import com.example.royalpizza.entity.Customer;
 import com.example.royalpizza.exception.CustomerException;
+import com.example.royalpizza.exception.ErrorMessages;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,13 +29,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        try {
+            String stok = authHeader;
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
 
-            try {
                 // Vérifie l’expiration
                 if (jwtTokenManager.isTokenExpired(token)) {
-                    throw new CustomerException("Le token a expiré, veuillez vous reconnecter");
+                    throw new CustomerException(ErrorMessages.EXPIRED_TOKEN);
                 }
 
                 // Parse et valide le token (vérifie la signature et extrait le customer)
@@ -46,16 +47,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(idCustomer, null, null);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            } catch (CustomerException e) {
-                // Laisse le GlobalExceptionHandler gérer le message proprement
-                throw e;
-            } catch (Exception e) {
-                // Autre erreur inattendue
-                throw new CustomerException("Token invalide ou corrompu");
             }
-        }
 
-        filterChain.doFilter(request, response);
+            // Continue la chaîne
+            filterChain.doFilter(request, response);
+
+            // On intercepte ici les erreurs métier (ex: token expiré)
+            // et on envoie une **réponse JSON propre** directement depuis le filtre,
+            // car le GlobalExceptionHandler ne peut pas intercepter les exceptions
+            // levées avant d’atteindre le contrôleur (Spring Security s’exécute avant Spring MVC).
+        } catch (CustomerException e) {
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String json = String.format("{\"message\": \"%s\"}", e.getMessage());
+            response.getWriter().write(json);
+
+        }
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.equals("/customers/login")
+                || path.equals("/customers/register")
+                || path.startsWith("/pizzas/");
+    }
+
 }

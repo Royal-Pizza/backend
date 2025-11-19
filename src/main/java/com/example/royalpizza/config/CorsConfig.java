@@ -46,7 +46,8 @@ public class CorsConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/pizzas/**",
-                                "/customers/**"
+                                "/customers/register",
+                                "/customers/login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

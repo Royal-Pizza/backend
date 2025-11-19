@@ -3,15 +3,15 @@ package com.example.royalpizza.controller;
 import com.example.royalpizza.DTO.OrderLineDTO;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
-import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.service.CustomerService;
 import com.example.royalpizza.service.InvoiceService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/purchases")
@@ -27,20 +27,18 @@ public class InvoiceController {
     private CustomerService customerService;
 
     @PostMapping("/buy")
-    public String buyPizzas(@RequestBody HashMap<String, ArrayList<OrderLineDTO>> orderLineDTO, HttpServletRequest request) {
+    public Map<String, Object> buyPizzas(@RequestBody HashMap<String, List<OrderLineDTO>> orderLineDTO) {
 
         // Récupération du header Authorization
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new CustomerException("Aucun token JWT fourni.");
-        }
-
-        String token = authHeader.substring(7);
-
-        // Extraction du client depuis le token
-        Long idCustomer = jwtTokenManager.parseToken(token);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idCustomer = (Long) auth.getPrincipal(); // récupéré depuis ton JwtAuthenticationFilter
         Customer customer = customerService.getCustomer(idCustomer);
         System.out.println("Customer ID from token: " + idCustomer);
-        return invoiceService.purchase(orderLineDTO, customer);
+        String msg = invoiceService.purchase(orderLineDTO, customer);
+        Map<String, Object> json = new HashMap<>();
+        json.put("message", msg);
+        json.put("token", jwtTokenManager.generateToken(customerService.getCustomer(idCustomer)));
+        System.out.println(json);
+        return json;
     }
 }

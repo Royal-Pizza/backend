@@ -1,29 +1,40 @@
 package com.example.royalpizza.service;
 
 import com.example.royalpizza.DTO.NewCustomerDTO;
+import com.example.royalpizza.DTO.OrderLineDTO;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
+import com.example.royalpizza.entity.Invoice;
+import com.example.royalpizza.entity.OrderLine;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.mapper.CustomerMapper;
+import com.example.royalpizza.mapper.OrderLineMapper;
 import com.example.royalpizza.repository.CustomerRepository;
+import com.example.royalpizza.repository.InvoiceRepository;
+import com.example.royalpizza.repository.OrderLineRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 
 
 @Service
 public class CustomerService {
 
-    private final JwtTokenManager jwtTokenManager;
+    private final PizzaService pizzaService;
     private final CustomerRepository customerRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final OrderLineRepository orderLineRepository;
+    private final JwtTokenManager jwtTokenManager;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(JwtTokenManager jwtTokenManager, CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
+    public CustomerService(PizzaService pizzaService, JwtTokenManager jwtTokenManager, CustomerRepository customerRepository, InvoiceRepository invoiceRepository, OrderLineRepository orderLineRepository, PasswordEncoder passwordEncoder) {
+        this.pizzaService = pizzaService;
         this.jwtTokenManager = jwtTokenManager;
+        this.invoiceRepository = invoiceRepository;
+        this.orderLineRepository = orderLineRepository;
         this.passwordEncoder = passwordEncoder;
         this.customerRepository = customerRepository;
     }
@@ -67,7 +78,7 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public String loginCustomer(String email, String password) throws IOException, CustomerException {
+    public String loginCustomer(String email, String password) throws CustomerException {
         Customer customer = getCustomer(email);
         if (customer != null) {
             if (passwordEncoder.matches(password, customer.getPassword())) {
@@ -78,6 +89,28 @@ public class CustomerService {
         } else {
             throw new CustomerException(ErrorMessages.CUSTOMER_NOT_FOUND + " : " + email);
         }
+    }
+
+    public Map<String, List<OrderLineDTO>> getBasket(Customer customer) {
+        Invoice invoice = invoiceRepository
+                .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer)
+                .orElseGet(Invoice::new);
+        List<OrderLine> orderLines = orderLineRepository.findByInvoice_IdInvoice(invoice.getIdInvoice());
+        Map<String, List<OrderLineDTO>> basket = new HashMap<>();
+        if (orderLines != null){
+            for(OrderLine orderLine : orderLines){
+                String namePizza = orderLine.getPizza().getNamePizza();
+                Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizza(namePizza);
+                OrderLineDTO orderLineDTO = OrderLineMapper.toDTO(orderLine);
+                orderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
+                if (!basket.containsKey(namePizza)){
+                    basket.put(namePizza, new ArrayList<>(List.of(orderLineDTO)));
+                } else {
+                    basket.get(namePizza).add(orderLineDTO);
+                }
+            }
+        }
+        return basket;
     }
 
     public List<Customer> findCustomerByIsAdminTrue() {

@@ -17,4 +17,13 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception e) {
+        System.err.println("Internal server error: " + e.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Une erreur est survenue : " + ErrorMessages.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
 }
