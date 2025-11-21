@@ -2,6 +2,7 @@ package com.example.royalpizza.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -19,6 +20,7 @@ public class OrderLine {
     @JoinColumn(name = "id_size", nullable = false)
     private Size size;
 
+    @ToString.Exclude
     @Id
     @ManyToOne
     @JoinColumn(name = "id_invoice", nullable = false)

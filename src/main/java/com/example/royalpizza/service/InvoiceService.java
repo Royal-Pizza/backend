@@ -1,6 +1,6 @@
 package com.example.royalpizza.service;
 
-import com.example.royalpizza.DTO.OrderLineDTO;
+import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.entity.*;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
@@ -60,7 +60,7 @@ public class InvoiceService {
 
 
     @Transactional
-    public Invoice saveBasket(Map<String, List<OrderLineDTO>> orders, Customer customer){
+    public Invoice saveBasket(Map<String, List<AdaptedOrderLine>> orders, Customer customer){
         Invoice invoice = invoiceRepository
                 .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer)
                 .orElseGet(Invoice::new);
@@ -68,16 +68,16 @@ public class InvoiceService {
         List<OrderLine> listeOrderLine = new ArrayList<>();
         for (String pizzaName : orders.keySet()) {
             Pizza pizza = pizzaService.getPizza(pizzaName);
-            List<OrderLineDTO> orderLines = orders.get(pizzaName);
+            List<AdaptedOrderLine> orderLines = orders.get(pizzaName);
             Map<String, BigDecimal> priceByPizza = pizzaService.getPriceRangeByPizza(pizzaName);
-            for (OrderLineDTO orderLineDTO : orderLines) {
-                Size size = sizeService.getSize(orderLineDTO.getSizeName());
+            for (AdaptedOrderLine adaptedOrderLineDTO : orderLines) {
+                Size size = sizeService.getSize(adaptedOrderLineDTO.getSizeName());
                 BigDecimal priceForPizzaSize = priceByPizza.get(size.getNameSize());
-                totalAmount = totalAmount.add(priceForPizzaSize.multiply(BigDecimal.valueOf(orderLineDTO.getQuantity())));
+                totalAmount = totalAmount.add(priceForPizzaSize.multiply(BigDecimal.valueOf(adaptedOrderLineDTO.getQuantity())));
                 OrderLine orderLine = new OrderLine();
                 orderLine.setPizza(pizza);
                 orderLine.setSize(size);
-                orderLine.setQuantity(orderLineDTO.getQuantity());
+                orderLine.setQuantity(adaptedOrderLineDTO.getQuantity());
                 listeOrderLine.add(orderLine);
             }
         }
@@ -93,7 +93,7 @@ public class InvoiceService {
     }
 
     @Transactional
-    public String purchase(HashMap<String, List<OrderLineDTO>> orders, Customer customer) {
+    public String purchase(HashMap<String, List<AdaptedOrderLine>> orders, Customer customer) {
         Invoice invoice = this.saveBasket(orders, customer);
         invoice.setFinalized(true);
         invoiceRepository.save(invoice);

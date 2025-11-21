@@ -10,7 +10,7 @@ public class CustomerMapper {
 
 
     // ========== Customer -> CustomerDTO ==========
-    public static CustomerDTO toDto(Customer customer) {
+    public static CustomerDTO toDTO(Customer customer) {
         if (customer == null) return null;
         CustomerDTO dto = new CustomerDTO();
         dto.setEmailAddress(customer.getEmailAddress());

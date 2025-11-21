@@ -1,7 +1,7 @@
 package com.example.royalpizza.service;
 
 import com.example.royalpizza.DTO.NewCustomerDTO;
-import com.example.royalpizza.DTO.OrderLineDTO;
+import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
 import com.example.royalpizza.entity.Invoice;
@@ -91,22 +91,22 @@ public class CustomerService {
         }
     }
 
-    public Map<String, List<OrderLineDTO>> getBasket(Customer customer) {
+    public Map<String, List<AdaptedOrderLine>> getBasket(Customer customer) {
         Invoice invoice = invoiceRepository
                 .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer)
                 .orElseGet(Invoice::new);
         List<OrderLine> orderLines = orderLineRepository.findByInvoice_IdInvoice(invoice.getIdInvoice());
-        Map<String, List<OrderLineDTO>> basket = new HashMap<>();
+        Map<String, List<AdaptedOrderLine>> basket = new HashMap<>();
         if (orderLines != null){
             for(OrderLine orderLine : orderLines){
                 String namePizza = orderLine.getPizza().getNamePizza();
                 Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizza(namePizza);
-                OrderLineDTO orderLineDTO = OrderLineMapper.toDTO(orderLine);
-                orderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
+                AdaptedOrderLine adaptedOrderLineDTO = OrderLineMapper.toAdapted(orderLine);
+                adaptedOrderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
                 if (!basket.containsKey(namePizza)){
-                    basket.put(namePizza, new ArrayList<>(List.of(orderLineDTO)));
+                    basket.put(namePizza, new ArrayList<>(List.of(adaptedOrderLineDTO)));
                 } else {
-                    basket.get(namePizza).add(orderLineDTO);
+                    basket.get(namePizza).add(adaptedOrderLineDTO);
                 }
             }
         }

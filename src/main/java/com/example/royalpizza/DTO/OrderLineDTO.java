@@ -6,7 +6,8 @@ import java.math.BigDecimal;
 
 @Data
 public class OrderLineDTO {
-    private String sizeName;
-    private int quantity;
-    private BigDecimal price;
+    String namePizza;
+    String nameSize;
+    BigDecimal price;
+    int quantity;
 }

@@ -3,7 +3,6 @@ package com.example.royalpizza.service;
 import com.example.royalpizza.entity.OrderLine;
 import com.example.royalpizza.entity.Size;
 import com.example.royalpizza.repository.OrderLineRepository;
-import com.example.royalpizza.repository.PizzaRepository;
 import com.example.royalpizza.repository.SizeRepository;
 import org.springframework.stereotype.Service;
 

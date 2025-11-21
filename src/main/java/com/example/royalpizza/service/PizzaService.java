@@ -1,7 +1,6 @@
 package com.example.royalpizza.service;
 
 import com.example.royalpizza.DTO.PizzaDTO;
-import com.example.royalpizza.entity.Ingredient;
 import com.example.royalpizza.entity.OrderLine;
 import com.example.royalpizza.entity.Pizza;
 import com.example.royalpizza.entity.Size;
@@ -98,7 +97,7 @@ public class PizzaService {
     }
 
     // recuperer les ingredients d'une pizza
-    private List<String> getIngredientsFromPizza(Object idPizza){
+    public List<String> getIngredientsFromPizza(Object idPizza){
         Pizza pizza = this.getPizza(idPizza);
         if (pizza != null) {
             return containRepository.findByPizzaIdPizza(pizza.getIdPizza())
