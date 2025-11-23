@@ -2,6 +2,7 @@ package com.example.royalpizza.config;
 
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -65,6 +66,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String json = String.format("{\"message\": \"%s\"}", e.getMessage());
             response.getWriter().write(json);
 
+        } catch(ExpiredJwtException e){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String json = String.format("{\"message\": \"%s\"}", ErrorMessages.EXPIRED_TOKEN);
+            response.getWriter().write(json);
         }
     }
 

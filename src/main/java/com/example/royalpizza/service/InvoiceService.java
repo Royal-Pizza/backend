@@ -43,7 +43,7 @@ public class InvoiceService {
 
     public List<Invoice> getAllInvoicesByCustomer(Object customerId) {
         Customer customer = customerService.getCustomer(customerId);
-        return invoiceRepository.findByCustomer(customer);
+        return invoiceRepository.findByCustomerAndFinalizedTrue(customer);
     }
 
     public Customer getBestCustomer() {

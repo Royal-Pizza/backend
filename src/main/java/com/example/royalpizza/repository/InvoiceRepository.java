@@ -21,6 +21,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     // Récupérer toutes les factures par Montant
     List<Invoice> findByTotalAmount(Double totalAmount);
 
+    List<Invoice> findByCustomerAndFinalizedTrue(Customer customer);
+
     Optional<Invoice> findFirstByCustomerAndFinalizedFalseOrderByDateDesc(Customer customer);
 
 

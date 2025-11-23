@@ -33,14 +33,17 @@ public class JwtTokenManager {
     }
 
     public boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return false; // pas d'exception → pas expiré
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return true; // exception → token expiré
+        }
     }
+
 
     public Long parseToken(String token) {
         Claims claims = Jwts.parserBuilder()
