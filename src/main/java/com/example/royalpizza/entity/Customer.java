@@ -35,6 +35,9 @@ public class Customer {
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin;
 
+    @Column(name = "availability", nullable = false)
+    private Boolean availability;
+
     @ToString.Exclude
     @OneToMany(mappedBy = "customer")
     private List<Invoice> invoices;

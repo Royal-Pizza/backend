@@ -98,7 +98,7 @@ public class InvoiceService {
         invoice.setFinalized(true);
         invoiceRepository.save(invoice);
         customer.setWallet(customer.getWallet().subtract(invoice.getTotalAmount()));
-        customerService.updateCustomer(customer, false);
+        customerService.updateCustomer(customer);
         // Toujours travailler sur la collection existante
         return "Transaction réussie. Montant total : " + invoice.getTotalAmount() + "€. Votre nouveau solde est de " + customer.getWallet() + "€.";
     }

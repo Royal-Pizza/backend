@@ -57,6 +57,7 @@ public class CustomerService {
 
     public Customer addCustomer(NewCustomerDTO newCustomerDTO) {
         Customer customer = CustomerMapper.toEntity(newCustomerDTO);
+        customer.setAvailability(true);
         if (customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).isPresent()) {
             throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
         }
@@ -66,21 +67,17 @@ public class CustomerService {
 
     public void deleteCustomer(Object object) {
         Customer customer = getCustomer(object);
-        if (customer != null) {
-            customerRepository.delete(customer);
-        }
+        customer.setAvailability(false);
+        customerRepository.save(customer);
     }
 
-    public Customer updateCustomer(Customer customer, boolean passwordChanged) {
-        if (passwordChanged) {
-            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        }
+    public Customer updateCustomer(Customer customer) {
         return customerRepository.save(customer);
     }
 
     public String loginCustomer(String email, String password) throws CustomerException {
         Customer customer = getCustomer(email);
-        if (customer != null) {
+        if (customer != null && customer.getAvailability()) {
             if (passwordEncoder.matches(password, customer.getPassword())) {
                 return jwtTokenManager.generateToken(customer);
             } else {
