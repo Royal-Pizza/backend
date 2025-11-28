@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 @Data
 public class AdaptedOrderLine {
-    private String sizeName;
+    private String nameSize;
     private int quantity;
     private BigDecimal price;
 }

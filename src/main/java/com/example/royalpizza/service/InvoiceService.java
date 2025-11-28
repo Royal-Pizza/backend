@@ -71,7 +71,7 @@ public class InvoiceService {
             List<AdaptedOrderLine> orderLines = orders.get(pizzaName);
             Map<String, BigDecimal> priceByPizza = pizzaService.getPriceRangeByPizza(pizzaName);
             for (AdaptedOrderLine adaptedOrderLineDTO : orderLines) {
-                Size size = sizeService.getSize(adaptedOrderLineDTO.getSizeName());
+                Size size = sizeService.getSize(adaptedOrderLineDTO.getNameSize());
                 BigDecimal priceForPizzaSize = priceByPizza.get(size.getNameSize());
                 totalAmount = totalAmount.add(priceForPizzaSize.multiply(BigDecimal.valueOf(adaptedOrderLineDTO.getQuantity())));
                 OrderLine orderLine = new OrderLine();

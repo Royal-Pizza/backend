@@ -4,16 +4,13 @@ import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.DTO.OrderLineDTO;
 import com.example.royalpizza.entity.OrderLine;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 public class OrderLineMapper {
 
     // le prix n'est pas mappé ici
     public static AdaptedOrderLine toAdapted(OrderLine orderLine) {
         if(orderLine != null) {;
             AdaptedOrderLine adaptedOrderLine = new AdaptedOrderLine();
-            adaptedOrderLine.setSizeName(orderLine.getSize().getNameSize());
+            adaptedOrderLine.setNameSize(orderLine.getSize().getNameSize());
             adaptedOrderLine.setQuantity(orderLine.getQuantity());
             return adaptedOrderLine;
         }
