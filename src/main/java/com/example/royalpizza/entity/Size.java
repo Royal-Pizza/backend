@@ -16,5 +16,8 @@ public class Size {
 
     @Column(nullable = false)
     private Double coeff;
+
+    @Column(nullable = false)
+    private boolean available;
 }
 
