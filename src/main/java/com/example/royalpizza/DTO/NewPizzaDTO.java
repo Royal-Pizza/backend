@@ -4,14 +4,11 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Data
-public class PizzaDTO {
-    private Long idPizza;
+public class NewPizzaDTO {
     private String namePizza;
-    private Map<String, BigDecimal> pricePizza;
+    private BigDecimal pricePizza;
     private List<String> ingredients;
     private byte[] image;
-    private boolean available;
 }

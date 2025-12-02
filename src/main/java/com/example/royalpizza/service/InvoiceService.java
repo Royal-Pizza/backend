@@ -5,7 +5,6 @@ import com.example.royalpizza.entity.*;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.repository.InvoiceRepository;
-import com.example.royalpizza.repository.OrderLineRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -20,42 +19,20 @@ import java.util.Map;
 public class InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
-    private final OrderLineRepository orderLineRepository;
     private final CustomerService customerService;
     private final PizzaService pizzaService;
     private final SizeService sizeService;
 
-    public InvoiceService(InvoiceRepository invoiceRepository, OrderLineRepository orderLineRepository, CustomerService customerService, PizzaService pizzaService, SizeService sizeService) {
+    public InvoiceService(InvoiceRepository invoiceRepository, CustomerService customerService, PizzaService pizzaService, SizeService sizeService) {
         this.invoiceRepository = invoiceRepository;
-        this.orderLineRepository = orderLineRepository;
         this.customerService = customerService;
         this.pizzaService = pizzaService;
         this.sizeService = sizeService;
     }
 
-    public Invoice getInvoiceById(Long id) {
-        return invoiceRepository.findById(id).orElse(null);
-    }
-
-    public List<OrderLine> getOrderLinesByInvoiceId(Long invoiceId) {
-        return orderLineRepository.findByInvoice_IdInvoice(invoiceId);
-    }
-
     public List<Invoice> getAllInvoicesByCustomer(Object customerId) {
         Customer customer = customerService.getCustomer(customerId);
         return invoiceRepository.findByCustomerAndFinalizedTrue(customer);
-    }
-
-    public Customer getBestCustomer() {
-        List<Invoice> invoices = invoiceRepository.findAll();
-        // on recupere le meilleur client, cad, celui qui a la somme totale la plus elevee de factures
-        return invoices.stream()
-                .collect(java.util.stream.Collectors.groupingBy(Invoice::getCustomer, java.util.stream.Collectors.summingDouble(inv -> inv.getTotalAmount().doubleValue())))
-                .entrySet()
-                .stream()
-                .max(java.util.Map.Entry.comparingByValue())
-                .map(java.util.Map.Entry::getKey)
-                .orElse(null);
     }
 
 
@@ -69,7 +46,7 @@ public class InvoiceService {
         for (String pizzaName : orders.keySet()) {
             Pizza pizza = pizzaService.getPizza(pizzaName);
             List<AdaptedOrderLine> orderLines = orders.get(pizzaName);
-            Map<String, BigDecimal> priceByPizza = pizzaService.getPriceRangeByPizza(pizzaName);
+            Map<String, BigDecimal> priceByPizza = pizzaService.getPriceRangeByPizzaAtDate(pizzaName, LocalDateTime.now());
             for (AdaptedOrderLine adaptedOrderLineDTO : orderLines) {
                 Size size = sizeService.getSize(adaptedOrderLineDTO.getNameSize());
                 BigDecimal priceForPizzaSize = priceByPizza.get(size.getNameSize());
@@ -81,7 +58,7 @@ public class InvoiceService {
                 listeOrderLine.add(orderLine);
             }
         }
-        if (totalAmount.compareTo(customer.getWallet()) > 0) {
+        if (totalAmount.compareTo(customer.getWallet()) >= 0) {
             throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
         invoice.setTotalAmount(totalAmount);
@@ -112,7 +89,7 @@ public class InvoiceService {
             invoice.setOrderLines(new ArrayList<>());
         }
 
-        // Ne pas faire invoice.setOrderLines(orderLines) car cela créerait une nouvelle collection vue que orphanRemoval est à true
+        // Ne pas faire invoice.setOrderLines(orderLines) car cela créerait une nouvelle collection, car 'orphanRemoval' est à true.
         invoice.getOrderLines().clear();
         invoice.getOrderLines().addAll(orderLines);
 

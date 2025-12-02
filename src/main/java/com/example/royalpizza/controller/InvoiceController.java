@@ -3,20 +3,20 @@ package com.example.royalpizza.controller;
 import com.example.royalpizza.DTO.InvoiceDTO;
 import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.DTO.OrderLineDTO;
-import com.example.royalpizza.DTO.PizzaDTO;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
 import com.example.royalpizza.entity.Invoice;
 import com.example.royalpizza.mapper.InvoiceMapper;
-import com.example.royalpizza.mapper.PizzaMapper;
 import com.example.royalpizza.service.CustomerService;
 import com.example.royalpizza.service.InvoiceService;
 import com.example.royalpizza.service.PizzaService;
+import com.example.royalpizza.service.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +37,9 @@ public class InvoiceController {
 
     @Autowired
     private PizzaService pizzaService;
+
+    @Autowired
+    private PriceService priceService;
 
     @PostMapping("/buy")
     public Map<String, Object> buyPizzas(@RequestBody HashMap<String, List<AdaptedOrderLine>> orderLineDTO) {
@@ -61,9 +64,9 @@ public class InvoiceController {
         for (Invoice invoice : listeInvoices) {
             InvoiceDTO invoiceDTO = InvoiceMapper.toDTO(invoice);
             for(OrderLineDTO orderLineDTO : invoiceDTO.getOrderLineDTOs()) {
-                orderLineDTO.setPrice(
-                        pizzaService.getPriceRangeByPizza(orderLineDTO.getNamePizza()).get(orderLineDTO.getNameSize())
-                );
+                BigDecimal price = pizzaService.getPriceRangeByPizzaAtDate(orderLineDTO.getNamePizza(), invoice.getDate()).get(orderLineDTO.getNameSize());
+                orderLineDTO.setPrice(price
+                        );
             }
             invoiceDTOs.add(invoiceDTO);
         }

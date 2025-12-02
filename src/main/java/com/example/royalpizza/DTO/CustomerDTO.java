@@ -12,4 +12,5 @@ public class CustomerDTO {
     private String emailAddress;
     private BigDecimal wallet;
     private boolean isAdmin;
+    private boolean available;
 }

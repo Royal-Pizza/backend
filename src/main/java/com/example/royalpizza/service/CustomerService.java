@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -39,9 +40,6 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
-    }
 
     public Customer getCustomer(Object object) {
         Optional<Customer> customerOpt;
@@ -57,7 +55,7 @@ public class CustomerService {
 
     public Customer addCustomer(NewCustomerDTO newCustomerDTO) {
         Customer customer = CustomerMapper.toEntity(newCustomerDTO);
-        customer.setAvailability(true);
+        customer.setAvailable(true);
         if (customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).isPresent()) {
             throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
         }
@@ -67,7 +65,7 @@ public class CustomerService {
 
     public void deleteCustomer(Object object) {
         Customer customer = getCustomer(object);
-        customer.setAvailability(false);
+        customer.setAvailable(false);
         customerRepository.save(customer);
     }
 
@@ -77,7 +75,7 @@ public class CustomerService {
 
     public String loginCustomer(String email, String password) throws CustomerException {
         Customer customer = getCustomer(email);
-        if (customer != null && customer.getAvailability()) {
+        if (customer != null && customer.getAvailable()) {
             if (passwordEncoder.matches(password, customer.getPassword())) {
                 return jwtTokenManager.generateToken(customer);
             } else {
@@ -97,7 +95,7 @@ public class CustomerService {
         if (orderLines != null){
             for(OrderLine orderLine : orderLines){
                 String namePizza = orderLine.getPizza().getNamePizza();
-                Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizza(namePizza);
+                Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizzaAtDate(namePizza, LocalDateTime.now());
                 AdaptedOrderLine adaptedOrderLineDTO = OrderLineMapper.toAdapted(orderLine);
                 adaptedOrderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
                 if (!basket.containsKey(namePizza)){
@@ -110,13 +108,6 @@ public class CustomerService {
         return basket;
     }
 
-    public List<Customer> findCustomerByIsAdminTrue() {
-        return customerRepository.findByIsAdminTrue();
-    }
-
-    public List<Customer> findCustomerByIsAdminFalse() {
-        return customerRepository.findByIsAdminFalse();
-    }
 
 }
 

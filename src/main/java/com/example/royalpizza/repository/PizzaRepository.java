@@ -13,8 +13,11 @@ public interface PizzaRepository extends JpaRepository<Pizza, Long> {
     // Méthode personnalisée pour récupérer une pizza par son nom
     List<Pizza> findByNamePizza(String name);
 
-    // Méthode personnalisée pour supprimer une pizza par son nom
-    void deleteByNamePizza(String name);
+    // Méthode personnalisée pour récupérer toutes les pizzas triées par disponibilité et nom
+    List<Pizza> findAllByOrderByAvailableDescNamePizzaAsc();
+
+    // Méthode personnalisée pour récupérer toutes les pizzas disponibles triées par nom
+    List<Pizza> findByAvailableTrueOrderByNamePizzaAsc();
 
     // recuperer la liste des ingrédients pour une pizza
     List<Ingredient> findIngredientsByIdPizza(Long idPizza);

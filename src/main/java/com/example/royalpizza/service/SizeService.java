@@ -25,8 +25,7 @@ public class SizeService {
             Optional<Size> sizeOptional = sizeRepository.findById(id);
             return sizeOptional.orElse(null);
         } else if (object instanceof String name) {
-            List<Size> sizes = sizeRepository.findByNameSize(name);
-            return sizes.isEmpty() ? null : sizes.get(0);
+            return sizeRepository.findTopByNameSize(name).orElse(null);
         }
         return null;
     }
@@ -37,7 +36,8 @@ public class SizeService {
 
 
     public List<Size> getAllSizes() {
-        return sizeRepository.findAll();
+        // retourne toutes les tailles disponibles triées par coefficient croissant
+        return sizeRepository.findAllByOrderByCoeffAsc();
     }
 
     public Size getBestSellingSize() {

@@ -16,7 +16,7 @@ public class PizzaController {
 
     @GetMapping
     public List<PizzaDTO> getAllPizzas() {
-        List<PizzaDTO> pizzasDto = pizzaService.getAllPizzasDTO();
+        List<PizzaDTO> pizzasDto = pizzaService.getAllPizzasDTOAvailable();
         return pizzasDto;
     }
 

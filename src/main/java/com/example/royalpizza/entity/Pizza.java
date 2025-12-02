@@ -3,8 +3,10 @@ package com.example.royalpizza.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
-import java.math.BigDecimal;
+import java.util.List;
+
 
 @Data
 @Entity
@@ -17,9 +19,14 @@ public class Pizza {
     @Column(nullable = false, unique = true)
     private String namePizza;
 
-    @Column(nullable = false)
-    private BigDecimal pricePizza;
-
     @Column(columnDefinition = "BYTEA")
     private byte[] image;
+
+    @Column(nullable = false)
+    private boolean available;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true) // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans pizza associée)
+    private List<Contain> contains;
+
 }

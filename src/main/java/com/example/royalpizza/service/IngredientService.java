@@ -46,4 +46,10 @@ public class IngredientService {
             throw new RuntimeException("Ingrédient non trouvé avec l'id : " + idIngredient);
         }
     }
+
+    public void deleteIngredient(Ingredient ingredient) {
+        ingredientRepository.delete(ingredient);
+    }
+
+
 }

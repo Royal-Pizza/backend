@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 public class CustomerMapper {
 
 
-    // ========== Customer -> CustomerDTO ==========
     public static CustomerDTO toDTO(Customer customer) {
         if (customer == null) return null;
         CustomerDTO dto = new CustomerDTO();
