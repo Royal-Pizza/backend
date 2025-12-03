@@ -8,10 +8,14 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -43,9 +47,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Parse et valide le token (vérifie la signature et extrait le customer)
                 Long idCustomer = jwtTokenManager.parseToken(token);
 
+                boolean isAdmin = jwtTokenManager.isAdminFromToken(token);
+
+                List<GrantedAuthority> authorities = new ArrayList<>();
+
+                if (isAdmin) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                } else {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                }
+
+
                 // Crée l’objet Authentication pour Spring Security
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(idCustomer, null, null);
+                        new UsernamePasswordAuthenticationToken(idCustomer, null, authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }

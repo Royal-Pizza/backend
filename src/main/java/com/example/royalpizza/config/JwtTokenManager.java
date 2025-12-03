@@ -54,4 +54,15 @@ public class JwtTokenManager {
         return ((Number) claims.get("id")).longValue();
     }
 
+    public boolean isAdminFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return (Boolean) claims.get("isAdmin");
+    }
+
+
 }
