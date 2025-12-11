@@ -16,6 +16,9 @@ public interface PizzaRepository extends JpaRepository<Pizza, Long> {
     // Méthode personnalisée pour récupérer toutes les pizzas disponibles triées par nom
     List<Pizza> findByAvailableTrueOrderByNamePizzaAsc();
 
+    // recuperer toutes les pizzas triées par disponibilité puis par nom
+    List<Pizza> findAllByOrderByAvailableDescNamePizzaAsc();
+
     // recuperer les pizzas contenant un ingrédient donné
     List<Pizza> findByContains_Ingredient_NameIngredient(String ingredientName);
 

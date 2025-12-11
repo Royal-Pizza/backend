@@ -15,7 +15,7 @@ public class Size {
     private String nameSize;
 
     @Column(nullable = false)
-    private Double coeff;
+    private double coeff;
 
     @Column(nullable = false)
     private boolean available;

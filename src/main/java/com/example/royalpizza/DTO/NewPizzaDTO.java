@@ -10,5 +10,5 @@ public class NewPizzaDTO {
     private String namePizza;
     private BigDecimal pricePizza;
     private List<String> ingredients;
-    private byte[] image;
-}
+    private String image;
+}   

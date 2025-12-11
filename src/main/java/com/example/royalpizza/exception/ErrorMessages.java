@@ -2,9 +2,6 @@ package com.example.royalpizza.exception;
 
 public final class ErrorMessages {
 
-    private ErrorMessages() {
-
-    }
 
     public static final String CUSTOMER_ALREADY_EXISTS = "Un client avec cet email existe déjà";
     public static final String CUSTOMER_NOT_FOUND = "Client introuvable pour l'identifiant fourni";
@@ -17,6 +14,8 @@ public final class ErrorMessages {
     public static final String PIZZA_UNAVAILABLE = "La pizza indiquée n'est pas disponible";
     public static final String PIZZA_NOT_FOUND = "Pizza introuvable pour l'identifiant fourni";
     public static final String INGREDIENT_NOT_FOUND = "Ingrédient introuvable pour l'identifiant fourni";
+    public static final String INGREDIENT_NOT_SAVED = "Échec de l'ajout ou de l'enregistrement de l'ingrédient";
     public static final String INGREDIENT_ALREADY_EXISTS = "Un ingrédient avec ce nom existe déjà";
     public static final String INTERNAL_SERVER_ERROR = "Erreur interne du serveur";
+    public static final String NOT_AUTHORIZED = "Vous n'êtes pas autorisé à effectuer cette action";
 }

@@ -45,7 +45,8 @@ public class CorsConfig {
                 .csrf(csrf -> csrf.disable()) // désactive CSRF pour API REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/pizzas/**",
+                                "/pizzas",
+                                "/pizzas/{namePizza}",
                                 "/customers/register",
                                 "/customers/login"
                         ).permitAll()

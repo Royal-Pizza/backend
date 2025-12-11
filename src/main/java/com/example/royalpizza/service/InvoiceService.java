@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class InvoiceService {
@@ -38,9 +35,16 @@ public class InvoiceService {
 
     @Transactional
     public Invoice saveBasket(Map<String, List<AdaptedOrderLine>> orders, Customer customer){
-        Invoice invoice = invoiceRepository
-                .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer)
-                .orElseGet(Invoice::new);
+        Optional<Invoice> invoiceOpt = invoiceRepository
+                .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer);
+        Invoice invoice = null;
+        if(!invoiceOpt.isPresent()){
+            System.out.println("Creating new invoice for customer ID: " + customer.getIdCustomer());
+            invoice = new Invoice();
+        }
+        else {
+            invoice = invoiceOpt.get();
+        }
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderLine> listeOrderLine = new ArrayList<>();
         for (String pizzaName : orders.keySet()) {
@@ -58,9 +62,7 @@ public class InvoiceService {
                 listeOrderLine.add(orderLine);
             }
         }
-        if (totalAmount.compareTo(customer.getWallet()) >= 0) {
-            throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
-        }
+
         invoice.setTotalAmount(totalAmount);
         invoice.setCustomer(customer);
         invoice.setDate(LocalDateTime.now());
@@ -74,6 +76,9 @@ public class InvoiceService {
         Invoice invoice = this.saveBasket(orders, customer);
         invoice.setFinalized(true);
         invoiceRepository.save(invoice);
+        if (invoice.getTotalAmount().compareTo(customer.getWallet()) >= 0) {
+            throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
+        }
         customer.setWallet(customer.getWallet().subtract(invoice.getTotalAmount()));
         customerService.updateCustomer(customer);
         // Toujours travailler sur la collection existante

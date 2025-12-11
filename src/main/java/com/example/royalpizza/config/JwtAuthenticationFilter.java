@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,6 +27,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.jwtTokenManager = jwtTokenManager;
     }
 
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -33,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: " + authHeader);
 
         try {
             String stok = authHeader;
@@ -94,9 +99,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return path.equals("/customers/login")
-                || path.equals("/customers/register")
-                || path.startsWith("/pizzas/");
+        return path.equals(contextPath + "/customers/login")
+                || path.equals(contextPath + "/customers/register")
+                || path.equals(contextPath + "/pizzas") // GET /pizzas
+                || path.matches(contextPath + "/pizzas/[^/]+"); // GET /pizzas/{namePizza}
     }
 
 }
