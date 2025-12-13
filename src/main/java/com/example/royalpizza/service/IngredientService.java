@@ -15,14 +15,12 @@ import java.util.Optional;
 @Service
 public class IngredientService {
 
-    private final PizzaRepository pizzaRepository;
     private IngredientRepository ingredientRepository;
     private ContainRepository containRepository;
 
-    public IngredientService(IngredientRepository ingredientRepository, ContainRepository containRepository, PizzaRepository pizzaRepository) {
+    public IngredientService(IngredientRepository ingredientRepository, ContainRepository containRepository) {
         this.containRepository = containRepository;
         this.ingredientRepository = ingredientRepository;
-        this.pizzaRepository = pizzaRepository;
     }
 
     public Ingredient getIngredient(Object object)
@@ -34,6 +32,10 @@ public class IngredientService {
             return ingredientRepository.findTopByNameIngredient(name);
         }
         return null;
+    }
+
+    public List<Ingredient> findByNameIngredientContaining(String namePart) {
+        return ingredientRepository.findByNameIngredientContainingOrderByNameIngredientAsc(namePart);
     }
 
     public List<Ingredient> getAllIngredients() {
@@ -52,20 +54,25 @@ public class IngredientService {
     }
 
     public Ingredient updateIngredient(Ingredient ingredient) {
-        // Vérifier si l'ingrédient existe
-        Ingredient existingIngredient = ingredientRepository.findTopByNameIngredient(ingredient.getNameIngredient());
-        if(existingIngredient != null) {
-            if(!ingredient.getIdIngredient().equals(existingIngredient.getIdIngredient())){
-                throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredient.getNameIngredient());
-            } else {
-                existingIngredient.setNameIngredient(ingredient.getNameIngredient());
-                return ingredientRepository.save(existingIngredient);
-            }
+        // Chercher par ID
+        Ingredient existingIngredient = ingredientRepository.findById(ingredient.getIdIngredient())
+                .orElseThrow(() -> new PizzaAndIngredientException(
+                        ErrorMessages.INGREDIENT_NOT_SAVED + " : " + ingredient.getNameIngredient()
+                ));
+
+        // Vérifier si un autre ingrédient a le même nom
+        Ingredient sameNameIngredient = ingredientRepository.findTopByNameIngredient(ingredient.getNameIngredient());
+        if (sameNameIngredient != null && !sameNameIngredient.getIdIngredient().equals(ingredient.getIdIngredient())) {
+            throw new PizzaAndIngredientException(
+                    ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredient.getNameIngredient()
+            );
         }
-        else{
-            throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_NOT_SAVED + " : " + ingredient.getNameIngredient());
-        }
+
+        // Mettre à jour
+        existingIngredient.setNameIngredient(ingredient.getNameIngredient());
+        return ingredientRepository.save(existingIngredient);
     }
+
 
     public void deleteIngredient(Long idIngredient) {
         Ingredient ingredient = getIngredient(idIngredient);

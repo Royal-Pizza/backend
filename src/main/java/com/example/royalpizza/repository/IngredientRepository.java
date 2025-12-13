@@ -13,4 +13,6 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
     // Récupérer un ingrédient par son nom
     Ingredient findTopByNameIngredient(String name);
 
+    List<Ingredient> findByNameIngredientContainingOrderByNameIngredientAsc(String namePart);
+
 }
