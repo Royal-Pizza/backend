@@ -46,6 +46,21 @@ public class CustomerController {
         return map;
     }
 
+    @GetMapping("/basket")
+    public Map<String, List<AdaptedOrderLine>> getBasket(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idCustomer = (Long) auth.getPrincipal();
+        Customer customer = customerService.getCustomer(idCustomer);
+        return customerService.getBasket(customer);
+    }
+
+    @PostMapping("saveBasket")
+    public void saveBasket(@RequestBody Map<String, List<AdaptedOrderLine>> basket) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long idCustomer = (Long) auth.getPrincipal();
+        this.invoiceService.saveBasket(basket, customerService.getCustomer(idCustomer));
+    }
+
     @PostMapping("/update")
     public Map<String, Object> update(@RequestBody CustomerDTO customerDTO) throws CustomerException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -97,13 +112,6 @@ public class CustomerController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idCustomer = (Long) auth.getPrincipal();
         this.customerService.deleteCustomer(idCustomer);
-    }
-
-    @PostMapping("/logout")
-    public void logout(@RequestBody Map<String, List<AdaptedOrderLine>> basket) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Long idCustomer = (Long) auth.getPrincipal();
-        this.invoiceService.saveBasket(basket, customerService.getCustomer(idCustomer));
     }
 
     @PostMapping("/register")

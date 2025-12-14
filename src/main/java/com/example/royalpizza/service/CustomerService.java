@@ -56,8 +56,14 @@ public class CustomerService {
     public Customer addCustomer(NewCustomerDTO newCustomerDTO) {
         Customer customer = CustomerMapper.toEntity(newCustomerDTO);
         customer.setAvailable(true);
-        if (customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).isPresent()) {
-            throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
+        Customer customerFound = customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).orElse(null);
+        if(customerFound != null){
+            if(customerFound.getAvailable()) {
+                throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
+            } else {
+                customer.setIdCustomer(customerFound.getIdCustomer());
+
+            }
         }
         customer.setPassword(passwordEncoder.encode(newCustomerDTO.getPassword()));
         return customerRepository.save(customer);
@@ -66,6 +72,19 @@ public class CustomerService {
     public void deleteCustomer(Object object) {
         Customer customer = getCustomer(object);
         customer.setAvailable(false);
+
+        List<Customer> adminCustomers = customerRepository.findByIsAdminTrue();
+
+        boolean isCurrentlyAdmin = adminCustomers.stream()
+                .anyMatch(c -> c.getIdCustomer().equals(customer.getIdCustomer()));
+
+        boolean isLastAdmin = adminCustomers.size() == 1;
+
+        if (isLastAdmin && isCurrentlyAdmin) {
+            if (!customer.getIsAdmin() || !customer.getAvailable()) {
+                throw new CustomerException(ErrorMessages.LAST_ADMIN_CANNOT_BE_DEMOTED);
+            }
+        }
         customerRepository.save(customer);
     }
 
@@ -81,6 +100,8 @@ public class CustomerService {
             } else {
                 throw new CustomerException(ErrorMessages.INVALID_PASSWORD);
             }
+        } else if (customer != null && !customer.getAvailable()) {
+            throw new CustomerException(ErrorMessages.CUSTOMER_UNVAILABLE + " : " + email);
         } else {
             throw new CustomerException(ErrorMessages.CUSTOMER_NOT_FOUND + " : " + email);
         }
@@ -92,13 +113,13 @@ public class CustomerService {
                 .orElseGet(Invoice::new);
         List<OrderLine> orderLines = orderLineRepository.findByInvoice_IdInvoice(invoice.getIdInvoice());
         Map<String, List<AdaptedOrderLine>> basket = new HashMap<>();
-        if (orderLines != null){
-            for(OrderLine orderLine : orderLines){
+        if (orderLines != null) {
+            for (OrderLine orderLine : orderLines) {
                 String namePizza = orderLine.getPizza().getNamePizza();
                 Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizzaAtDate(namePizza, LocalDateTime.now());
                 AdaptedOrderLine adaptedOrderLineDTO = OrderLineMapper.toAdapted(orderLine);
                 adaptedOrderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
-                if (!basket.containsKey(namePizza)){
+                if (!basket.containsKey(namePizza)) {
                     basket.put(namePizza, new ArrayList<>(List.of(adaptedOrderLineDTO)));
                 } else {
                     basket.get(namePizza).add(adaptedOrderLineDTO);

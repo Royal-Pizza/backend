@@ -1,10 +1,10 @@
 package com.example.royalpizza.exception;
 
 public final class ErrorMessages {
-
-
     public static final String CUSTOMER_ALREADY_EXISTS = "Un client avec cet email existe déjà";
     public static final String CUSTOMER_NOT_FOUND = "Client introuvable pour l'identifiant fourni";
+    public static final String CUSTOMER_UNVAILABLE = "Le client indiqué n'est pas disponible, veuillez vous réinscrire";
+    public static final String LAST_ADMIN_CANNOT_BE_DEMOTED = "Vous êtes le dernier administrateur, et vous ne pouvez pas être rétrogradé ni supprimé";
     public static final String INVALID_PASSWORD = "Mot de passe incorrect";
     public static final String INVALID_TOKEN = "Token invalide";
     public static final String INSUFFICIENT_BALANCE = "Fonds insuffisants pour effectuer cet achat. Veuillez recharger votre compte.";

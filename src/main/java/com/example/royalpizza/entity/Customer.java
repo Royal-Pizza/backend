@@ -1,5 +1,6 @@
 package com.example.royalpizza.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -40,5 +41,6 @@ public class Customer {
 
     @ToString.Exclude
     @OneToMany(mappedBy = "customer")
+    @JsonManagedReference
     private List<Invoice> invoices;
 }

@@ -15,19 +15,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // Recuperer la liste des clients administrateurs
     List<Customer> findByIsAdminTrue();
-
-    // Recuperer la liste des clients non administrateurs
-    List<Customer> findByIsAdminFalse();
-
-    // Recuperer la liste des clients par nom
-    List<Customer> findByLastNameContainingIgnoreCase(String lastName);
-
-    // Recuperer la liste des clients par prenom
-    List<Customer> findByFirstNameContainingIgnoreCase(String firstName);
-
-    // Recuperer un client par son adresse email
-    Customer findCustomerByEmailAddress(String email);
-
-    // Supprimer un client par son email
-    void deleteByEmailAddress(String email);
 }

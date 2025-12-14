@@ -9,6 +9,7 @@ import com.example.royalpizza.exception.PizzaAndIngredientException;
 import com.example.royalpizza.mapper.PizzaMapper;
 import com.example.royalpizza.repository.*;
 import jakarta.transaction.Transactional;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -125,6 +126,11 @@ public class PizzaService {
             throw new PizzaAndIngredientException(ErrorMessages.PIZZA_ALREADY_EXISTS + " : " + updatedPizzaDTO.getNamePizza());
         }
 
+        if(!updatedPizzaDTO.isAvailable()) {
+            List<OrderLine> orderLinesWithInvoicesNotFinalized = orderLineRepository
+                    .findByPizzaAndInvoice_FinalizedFalse(this.getPizza(updatedPizzaDTO.getIdPizza()));
+            this.orderLineRepository.deleteAll(orderLinesWithInvoicesNotFinalized);
+        }
         pizza = PizzaMapper.toEntity(updatedPizzaDTO);
 
         savePizzaWithIngredientsAndPrice(pizza, updatedPizzaDTO.getIngredients(), updatedPizzaDTO.getPricePizza());

@@ -1,5 +1,6 @@
 package com.example.royalpizza.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
@@ -30,6 +31,7 @@ public class Invoice {
     @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "id_customer", nullable = false)
+    @JsonBackReference
     private Customer customer;
 
     @ToString.Exclude
