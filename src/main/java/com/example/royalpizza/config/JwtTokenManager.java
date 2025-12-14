@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -14,8 +15,10 @@ import java.security.Key;
 @Component
 public class JwtTokenManager {
 
-    private final Key secretKey = Keys.hmacShaKeyFor("MaSuperCleSecreteJWT_Pour_RoyalPizza_2025_TresLongue!".getBytes());
-    private final long validity = 8400000; // 24 hours in milliseconds
+    private Key secretKey = Keys.hmacShaKeyFor("MaSuperCleSecreteJWT_Pour_RoyalPizza_2025_TresLongue!".getBytes());
+
+    @Value("${jwt.expiration}")
+    private long validity; // 24 hours in milliseconds
 
 
     public String generateToken(Customer customer) {

@@ -54,6 +54,11 @@ public class CustomerController {
         return customerService.getBasket(customer);
     }
 
+    @GetMapping("checkToken")
+    public void checkToken(){
+
+    }
+
     @PostMapping("saveBasket")
     public void saveBasket(@RequestBody Map<String, List<AdaptedOrderLine>> basket) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
