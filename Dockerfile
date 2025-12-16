@@ -1,13 +1,12 @@
-# Utiliser une image Java officielle
-FROM eclipse-temurin:21-jdk-jammy
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
 
-# Copier le jar de Spring Boot dans le conteneur
-ARG JAR_FILE=target/demo-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
-
-# Exposer le port 8081 (comme dans ton application.properties)
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
-
-# Commande pour lancer l'application
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
