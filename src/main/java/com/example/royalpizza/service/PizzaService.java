@@ -64,6 +64,7 @@ public class PizzaService {
         } else if (object instanceof String) {
             pizzaOpt = pizzaRepository.findByNamePizza((String) object).stream().findFirst();
         } else {
+            System.err.println("getPizza: unsupported identifier type for pizza: " + object);
             throw new IllegalArgumentException("Type d'identifiant non supporté pour la pizza : " + object);
         }
         return pizzaOpt.orElse(null);
@@ -75,6 +76,7 @@ public class PizzaService {
             if(pizzaDTO.isAvailable()) {
                 return pizzaDTO;
             } else {
+                System.err.println("Attempt to access an unavailable pizza with getPizzaDTOAvailable: " + pizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_UNAVAILABLE + " : " + pizzaDTO.getNamePizza());
             }
         }
@@ -99,8 +101,10 @@ public class PizzaService {
         Pizza existingPizza = this.getPizza(newPizza.getNamePizza());
         if (existingPizza != null) {
             if (!existingPizza.isAvailable()) {
+                System.err.println("Attempt to add a pizza that exists but is unavailable: " + newPizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_UNAVAILABLE + " : " + newPizzaDTO.getNamePizza());
             } else {
+                System.err.println("Attempt to add a pizza that already exists: " + newPizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_ALREADY_EXISTS + " : " + newPizzaDTO.getNamePizza());
             }
         }
@@ -113,6 +117,7 @@ public class PizzaService {
     public void updatePizza(UpdatedPizzaDTO updatedPizzaDTO) {
         Pizza pizza = getPizza(updatedPizzaDTO.getIdPizza());
         if (pizza == null) {
+            System.err.println("Attempt to update a pizza that does not exist: " + updatedPizzaDTO.getIdPizza());
             throw new PizzaAndIngredientException(ErrorMessages.PIZZA_NOT_FOUND);
         }
         Long idPizza = pizza.getIdPizza();
@@ -123,6 +128,7 @@ public class PizzaService {
                 .findAny();
 
         if (otherPizzaWithSameName.isPresent()) {
+            System.err.println("Attempt to update a pizza to a name that already exists: " + updatedPizzaDTO.getNamePizza());
             throw new PizzaAndIngredientException(ErrorMessages.PIZZA_ALREADY_EXISTS + " : " + updatedPizzaDTO.getNamePizza());
         }
 
@@ -159,6 +165,7 @@ public class PizzaService {
                     ));
             return map;
         } else {
+            System.err.println("Price not found for pizza " + pizza.getNamePizza() + " at date " + localDateTime.toString());
             throw new PizzaAndIngredientException(
                     ErrorMessages.PRICE_NOT_FOUND + " : " + pizza.getNamePizza() + " à la date " + localDateTime.toString()
             );
@@ -194,6 +201,7 @@ public class PizzaService {
         for (String ingredientName : ingredientsNames) {
             Ingredient ingredient = ingredientService.getIngredient(ingredientName);
             if (ingredient == null) {
+                System.err.println("Ingredient not found when saving pizza: " + ingredientName);
                 throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_NOT_FOUND + " : " + ingredientName);
             }
             Contain contain = new Contain();

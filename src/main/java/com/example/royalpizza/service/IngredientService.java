@@ -45,6 +45,7 @@ public class IngredientService {
     public void addIngredient(String ingredientName) {
         Ingredient existingIngredient = ingredientRepository.findTopByNameIngredient(ingredientName);
         if(existingIngredient != null) {
+            System.err.println("addIngredient: ingredient already exists: " + existingIngredient.getNameIngredient());
             throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredientName);
         } else {
             Ingredient newIngredient = new Ingredient();
@@ -63,6 +64,7 @@ public class IngredientService {
         // Vérifier si un autre ingrédient a le même nom
         Ingredient sameNameIngredient = ingredientRepository.findTopByNameIngredient(ingredient.getNameIngredient());
         if (sameNameIngredient != null && !sameNameIngredient.getIdIngredient().equals(ingredient.getIdIngredient())) {
+            System.err.println("updateIngredient: ingredient with same name found: " + sameNameIngredient.getNameIngredient());
             throw new PizzaAndIngredientException(
                     ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredient.getNameIngredient()
             );

@@ -36,11 +36,13 @@ public class PizzaController {
     public List<PizzaDTO> getAllPizzas() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            System.err.println("Unauthorized access attempt to /pizzas/all");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /pizzas/all");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         List<PizzaDTO> pizzasDto = pizzaService.getAllPizzasDTO();
@@ -53,6 +55,7 @@ public class PizzaController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /pizzas/add");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         pizzaService.addPizza(newPizzaDTO);
@@ -62,11 +65,13 @@ public class PizzaController {
         public void updatePizza(@RequestBody UpdatedPizzaDTO updatedPizzaDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            System.err.println("Unauthorized access attempt to /pizzas/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /pizzas/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         pizzaService.updatePizza(updatedPizzaDTO);

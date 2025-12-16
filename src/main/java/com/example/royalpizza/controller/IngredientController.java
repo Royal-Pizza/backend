@@ -24,6 +24,7 @@ public class IngredientController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /ingredients");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         return ingredientService.getAllIngredients();
@@ -35,6 +36,7 @@ public class IngredientController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /ingredients/" + namePart);
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         return ingredientService.findByNameIngredientContaining(namePart);
@@ -46,6 +48,7 @@ public class IngredientController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /ingredients/add");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.addIngredient(nameIngredient);
@@ -57,6 +60,7 @@ public class IngredientController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /ingredients/delete");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.deleteIngredient(idIngredient);
@@ -68,6 +72,7 @@ public class IngredientController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if(!isAdmin) {
+            System.err.println("Unauthorized access attempt to /ingredients/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.updateIngredient(ingredient);

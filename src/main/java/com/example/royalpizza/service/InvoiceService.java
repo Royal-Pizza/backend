@@ -77,6 +77,7 @@ public class InvoiceService {
         invoice.setFinalized(true);
         invoiceRepository.save(invoice);
         if (invoice.getTotalAmount().compareTo(customer.getWallet()) >= 0) {
+            System.err.println("Insufficient balance for customer ID: " + customer.getIdCustomer());
             throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
         customer.setWallet(customer.getWallet().subtract(invoice.getTotalAmount()));

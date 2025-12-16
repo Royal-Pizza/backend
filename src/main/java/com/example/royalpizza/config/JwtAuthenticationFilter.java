@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Vérifie l’expiration
                 if (jwtTokenManager.isTokenExpired(token)) {
+                    System.err.println("Expired token detected in request to " + request.getServletPath());
                     throw new CustomerException(ErrorMessages.EXPIRED_TOKEN);
                 }
 

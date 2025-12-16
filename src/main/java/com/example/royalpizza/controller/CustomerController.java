@@ -71,6 +71,7 @@ public class CustomerController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idCustomer = (Long) auth.getPrincipal();
         if(idCustomer != customerDTO.getIdCustomer()) {
+            System.err.println("Token customer ID does not match the provided customer ID during the update of customer info.");
             throw new CustomerException(ErrorMessages.INVALID_TOKEN);
         } else {
             Customer customer = this.customerService.getCustomer(idCustomer);

@@ -48,6 +48,7 @@ public class CustomerService {
         } else if (object instanceof String) {
             customerOpt = customerRepository.findByEmailAddress((String) object).stream().findFirst();
         } else {
+            System.err.println("ID type not supported for customer: " + object);
             throw new IllegalArgumentException("Type d'identifiant non supporté pour le client : " + object);
         }
         return customerOpt.orElse(null);
@@ -59,6 +60,7 @@ public class CustomerService {
         Customer customerFound = customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).orElse(null);
         if(customerFound != null){
             if(customerFound.getAvailable()) {
+                System.err.println("Customer already exists: " + newCustomerDTO.getEmailAddress());
                 throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
             } else {
                 customer.setIdCustomer(customerFound.getIdCustomer());
@@ -82,6 +84,7 @@ public class CustomerService {
 
         if (isLastAdmin && isCurrentlyAdmin) {
             if (!customer.getIsAdmin() || !customer.getAvailable()) {
+                System.err.println("Cannot demote or delete the last admin customer: " + customer.getEmailAddress());
                 throw new CustomerException(ErrorMessages.LAST_ADMIN_CANNOT_BE_DEMOTED);
             }
         }
@@ -98,11 +101,14 @@ public class CustomerService {
             if (passwordEncoder.matches(password, customer.getPassword())) {
                 return jwtTokenManager.generateToken(customer);
             } else {
+                System.err.println("Invalid password attempt for customer: " + email);
                 throw new CustomerException(ErrorMessages.INVALID_PASSWORD);
             }
         } else if (customer != null && !customer.getAvailable()) {
+            System.err.println("Attempt to login to an unavailable customer account: " + email);
             throw new CustomerException(ErrorMessages.CUSTOMER_UNVAILABLE + " : " + email);
         } else {
+            System.err.println("Customer not found during login attempt: " + email);
             throw new CustomerException(ErrorMessages.CUSTOMER_NOT_FOUND + " : " + email);
         }
     }

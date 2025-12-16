@@ -11,13 +11,10 @@ public class Size {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idSize;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String nameSize;
 
     @Column(nullable = false)
     private double coeff;
-
-    @Column(nullable = false)
-    private boolean available;
 }
 
