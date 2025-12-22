@@ -100,7 +100,7 @@ public class CustomerController {
         return map;
     }
 
-    @PostMapping("walletRecharge")
+    @PostMapping("/walletRecharge")
     public Map<String, Object> walletRecharge(@RequestBody Double amount) throws CustomerException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idCustomer = (Long) auth.getPrincipal();
