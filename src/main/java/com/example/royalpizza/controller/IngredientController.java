@@ -4,6 +4,7 @@ import com.example.royalpizza.entity.Ingredient;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.service.IngredientService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/ingredients")
 public class IngredientController {
@@ -23,8 +25,8 @@ public class IngredientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /ingredients");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /ingredients");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         return ingredientService.getAllIngredients();
@@ -35,8 +37,8 @@ public class IngredientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /ingredients/" + namePart);
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /ingredients/" + namePart);
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         return ingredientService.findByNameIngredientContaining(namePart);
@@ -47,8 +49,8 @@ public class IngredientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /ingredients/add");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /ingredients/add");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.addIngredient(nameIngredient);
@@ -59,8 +61,8 @@ public class IngredientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /ingredients/delete");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /ingredients/delete");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.deleteIngredient(idIngredient);
@@ -71,8 +73,8 @@ public class IngredientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /ingredients/update");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /ingredients/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         ingredientService.updateIngredient(ingredient);

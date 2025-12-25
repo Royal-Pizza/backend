@@ -35,6 +35,7 @@ public class Invoice {
     private Customer customer;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true) // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans facture associée)
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans facture associée)
     private List<OrderLine> orderLines;
 }

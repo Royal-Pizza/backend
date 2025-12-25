@@ -6,12 +6,14 @@ import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.repository.InvoiceRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+@Slf4j
 @Service
 public class InvoiceService {
 
@@ -34,15 +36,14 @@ public class InvoiceService {
 
 
     @Transactional
-    public Invoice saveBasket(Map<String, List<AdaptedOrderLine>> orders, Customer customer){
+    public Invoice saveBasket(Map<String, List<AdaptedOrderLine>> orders, Customer customer) {
         Optional<Invoice> invoiceOpt = invoiceRepository
                 .findFirstByCustomerAndFinalizedFalseOrderByDateDesc(customer);
         Invoice invoice = null;
-        if(!invoiceOpt.isPresent()){
+        if (!invoiceOpt.isPresent()) {
             System.out.println("Creating new invoice for customer ID: " + customer.getIdCustomer());
             invoice = new Invoice();
-        }
-        else {
+        } else {
             invoice = invoiceOpt.get();
         }
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -77,7 +78,7 @@ public class InvoiceService {
         invoice.setFinalized(true);
         invoiceRepository.save(invoice);
         if (invoice.getTotalAmount().compareTo(customer.getWallet()) >= 0) {
-            System.err.println("Insufficient balance for customer ID: " + customer.getIdCustomer());
+            log.error("Insufficient balance for customer ID: " + customer.getIdCustomer());
             throw new CustomerException(ErrorMessages.INSUFFICIENT_BALANCE);
         }
         customer.setWallet(customer.getWallet().subtract(invoice.getTotalAmount()));

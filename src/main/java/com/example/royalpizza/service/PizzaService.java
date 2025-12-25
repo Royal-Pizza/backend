@@ -7,9 +7,12 @@ import com.example.royalpizza.entity.*;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.exception.PizzaAndIngredientException;
 import com.example.royalpizza.mapper.PizzaMapper;
-import com.example.royalpizza.repository.*;
+import com.example.royalpizza.repository.ContainRepository;
+import com.example.royalpizza.repository.OrderLineRepository;
+import com.example.royalpizza.repository.PizzaRepository;
+import com.example.royalpizza.repository.PriceRepository;
 import jakarta.transaction.Transactional;
-import org.aspectj.weaver.ast.Or;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class PizzaService {
 
@@ -30,10 +34,12 @@ public class PizzaService {
     private final SizeService sizeService;
     private final IngredientService ingredientService;
 
+    private final PizzaMapper pizzaMapper;
+
     public PizzaService(PizzaRepository pizzaRepository, ContainRepository containRepository,
                         OrderLineRepository orderLineRepository, PriceService priceService,
                         PriceRepository priceRepository, SizeService sizeService,
-                        IngredientService ingredientService) {
+                        IngredientService ingredientService, PizzaMapper pizzaMapper) {
         this.pizzaRepository = pizzaRepository;
         this.containRepository = containRepository;
         this.orderLineRepository = orderLineRepository;
@@ -41,6 +47,7 @@ public class PizzaService {
         this.priceService = priceService;
         this.sizeService = sizeService;
         this.ingredientService = ingredientService;
+        this.pizzaMapper = pizzaMapper;
     }
 
     public List<PizzaDTO> getAllPizzasDTOAvailable() {
@@ -50,7 +57,7 @@ public class PizzaService {
                 .collect(Collectors.toList());
     }
 
-    public List<PizzaDTO> getAllPizzasDTO(){
+    public List<PizzaDTO> getAllPizzasDTO() {
         List<Pizza> pizzas = pizzaRepository.findAllByOrderByAvailableDescNamePizzaAsc();
         return pizzas.stream()
                 .map(pizza -> getPizzaDTO(pizza.getIdPizza()))
@@ -64,7 +71,7 @@ public class PizzaService {
         } else if (object instanceof String) {
             pizzaOpt = pizzaRepository.findByNamePizza((String) object).stream().findFirst();
         } else {
-            System.err.println("getPizza: unsupported identifier type for pizza: " + object);
+            log.error("getPizza: unsupported identifier type for pizza: " + object);
             throw new IllegalArgumentException("Type d'identifiant non supporté pour la pizza : " + object);
         }
         return pizzaOpt.orElse(null);
@@ -72,11 +79,11 @@ public class PizzaService {
 
     public PizzaDTO getPizzaDTOAvailable(Object object) {
         PizzaDTO pizzaDTO = getPizzaDTO(object);
-        if(pizzaDTO != null) {
-            if(pizzaDTO.isAvailable()) {
+        if (pizzaDTO != null) {
+            if (pizzaDTO.isAvailable()) {
                 return pizzaDTO;
             } else {
-                System.err.println("Attempt to access an unavailable pizza with getPizzaDTOAvailable: " + pizzaDTO.getNamePizza());
+                log.error("Attempt to access an unavailable pizza with getPizzaDTOAvailable: " + pizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_UNAVAILABLE + " : " + pizzaDTO.getNamePizza());
             }
         }
@@ -86,7 +93,7 @@ public class PizzaService {
     public PizzaDTO getPizzaDTO(Object object) {
         Pizza pizza = getPizza(object);
         if (pizza != null) {
-            PizzaDTO pizzaDTO = PizzaMapper.toDTO(pizza);
+            PizzaDTO pizzaDTO = this.pizzaMapper.toDTO(pizza);
             pizzaDTO.setIngredients(getIngredientsFromPizza(pizzaDTO.getIdPizza()));
             pizzaDTO.setPricePizza(getPriceRangeByPizzaAtDate(pizzaDTO.getIdPizza(), LocalDateTime.now()));
             return pizzaDTO;
@@ -96,15 +103,15 @@ public class PizzaService {
 
     @Transactional
     public void addPizza(NewPizzaDTO newPizzaDTO) {
-        Pizza newPizza = PizzaMapper.toEntity(newPizzaDTO);
+        Pizza newPizza = this.pizzaMapper.toEntity(newPizzaDTO);
 
         Pizza existingPizza = this.getPizza(newPizza.getNamePizza());
         if (existingPizza != null) {
             if (!existingPizza.isAvailable()) {
-                System.err.println("Attempt to add a pizza that exists but is unavailable: " + newPizzaDTO.getNamePizza());
+                log.error("Attempt to add a pizza that exists but is unavailable: " + newPizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_UNAVAILABLE + " : " + newPizzaDTO.getNamePizza());
             } else {
-                System.err.println("Attempt to add a pizza that already exists: " + newPizzaDTO.getNamePizza());
+                log.error("Attempt to add a pizza that already exists: " + newPizzaDTO.getNamePizza());
                 throw new PizzaAndIngredientException(ErrorMessages.PIZZA_ALREADY_EXISTS + " : " + newPizzaDTO.getNamePizza());
             }
         }
@@ -117,7 +124,7 @@ public class PizzaService {
     public void updatePizza(UpdatedPizzaDTO updatedPizzaDTO) {
         Pizza pizza = getPizza(updatedPizzaDTO.getIdPizza());
         if (pizza == null) {
-            System.err.println("Attempt to update a pizza that does not exist: " + updatedPizzaDTO.getIdPizza());
+            log.error("Attempt to update a pizza that does not exist: " + updatedPizzaDTO.getIdPizza());
             throw new PizzaAndIngredientException(ErrorMessages.PIZZA_NOT_FOUND);
         }
         Long idPizza = pizza.getIdPizza();
@@ -128,16 +135,16 @@ public class PizzaService {
                 .findAny();
 
         if (otherPizzaWithSameName.isPresent()) {
-            System.err.println("Attempt to update a pizza to a name that already exists: " + updatedPizzaDTO.getNamePizza());
+            log.error("Attempt to update a pizza to a name that already exists: " + updatedPizzaDTO.getNamePizza());
             throw new PizzaAndIngredientException(ErrorMessages.PIZZA_ALREADY_EXISTS + " : " + updatedPizzaDTO.getNamePizza());
         }
 
-        if(!updatedPizzaDTO.isAvailable()) {
+        if (!updatedPizzaDTO.isAvailable()) {
             List<OrderLine> orderLinesWithInvoicesNotFinalized = orderLineRepository
                     .findByPizzaAndInvoice_FinalizedFalse(this.getPizza(updatedPizzaDTO.getIdPizza()));
             this.orderLineRepository.deleteAll(orderLinesWithInvoicesNotFinalized);
         }
-        pizza = PizzaMapper.toEntity(updatedPizzaDTO);
+        pizza = this.pizzaMapper.toEntity(updatedPizzaDTO);
 
         savePizzaWithIngredientsAndPrice(pizza, updatedPizzaDTO.getIngredients(), updatedPizzaDTO.getPricePizza());
     }
@@ -146,7 +153,7 @@ public class PizzaService {
         Pizza pizza = getPizza(idPizza);
         Price pricePizza = this.priceRepository.findTopByPizzaAndValidFromLessThanEqualOrderByValidFromDesc(pizza, localDateTime)
                 .orElse(null);
-        if(pricePizza != null) {
+        if (pricePizza != null) {
             List<Size> sizes = sizeService.getAllSizes();
             Map<String, BigDecimal> map = new HashMap<>();
             for (Size size : sizes) {
@@ -165,14 +172,14 @@ public class PizzaService {
                     ));
             return map;
         } else {
-            System.err.println("Price not found for pizza " + pizza.getNamePizza() + " at date " + localDateTime.toString());
+            log.error("Price not found for pizza " + pizza.getNamePizza() + " at date " + localDateTime.toString());
             throw new PizzaAndIngredientException(
                     ErrorMessages.PRICE_NOT_FOUND + " : " + pizza.getNamePizza() + " à la date " + localDateTime.toString()
             );
         }
     }
 
-    private List<String> getIngredientsFromPizza(Object idPizza){
+    private List<String> getIngredientsFromPizza(Object idPizza) {
         Pizza pizza = this.getPizza(idPizza);
         if (pizza != null) {
             List<String> retour = containRepository.findByPizzaIdPizza(pizza.getIdPizza())
@@ -201,7 +208,7 @@ public class PizzaService {
         for (String ingredientName : ingredientsNames) {
             Ingredient ingredient = ingredientService.getIngredient(ingredientName);
             if (ingredient == null) {
-                System.err.println("Ingredient not found when saving pizza: " + ingredientName);
+                log.error("Ingredient not found when saving pizza: " + ingredientName);
                 throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_NOT_FOUND + " : " + ingredientName);
             }
             Contain contain = new Contain();

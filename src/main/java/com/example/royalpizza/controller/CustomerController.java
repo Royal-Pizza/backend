@@ -1,15 +1,16 @@
 package com.example.royalpizza.controller;
 
+import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.DTO.CustomerDTO;
 import com.example.royalpizza.DTO.LoginDTO;
 import com.example.royalpizza.DTO.NewCustomerDTO;
-import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.service.CustomerService;
 import com.example.royalpizza.service.InvoiceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/customers")
 public class CustomerController {
@@ -47,7 +49,7 @@ public class CustomerController {
     }
 
     @GetMapping("/basket")
-    public Map<String, List<AdaptedOrderLine>> getBasket(){
+    public Map<String, List<AdaptedOrderLine>> getBasket() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idCustomer = (Long) auth.getPrincipal();
         Customer customer = customerService.getCustomer(idCustomer);
@@ -55,7 +57,7 @@ public class CustomerController {
     }
 
     @GetMapping("checkToken")
-    public void checkToken(){
+    public void checkToken() {
 
     }
 
@@ -70,8 +72,8 @@ public class CustomerController {
     public Map<String, Object> update(@RequestBody CustomerDTO customerDTO) throws CustomerException {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Long idCustomer = (Long) auth.getPrincipal();
-        if(idCustomer != customerDTO.getIdCustomer()) {
-            System.err.println("Token customer ID does not match the provided customer ID during the update of customer info.");
+        if (idCustomer != customerDTO.getIdCustomer()) {
+            log.error("Token customer ID does not match the provided customer ID during the update of customer info.");
             throw new CustomerException(ErrorMessages.INVALID_TOKEN);
         } else {
             Customer customer = this.customerService.getCustomer(idCustomer);

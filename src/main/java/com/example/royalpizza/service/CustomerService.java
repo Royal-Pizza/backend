@@ -1,7 +1,7 @@
 package com.example.royalpizza.service;
 
-import com.example.royalpizza.DTO.NewCustomerDTO;
 import com.example.royalpizza.DTO.AdaptedOrderLine;
+import com.example.royalpizza.DTO.NewCustomerDTO;
 import com.example.royalpizza.config.JwtTokenManager;
 import com.example.royalpizza.entity.Customer;
 import com.example.royalpizza.entity.Invoice;
@@ -13,6 +13,7 @@ import com.example.royalpizza.mapper.OrderLineMapper;
 import com.example.royalpizza.repository.CustomerRepository;
 import com.example.royalpizza.repository.InvoiceRepository;
 import com.example.royalpizza.repository.OrderLineRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
+@Slf4j
 @Service
 public class CustomerService {
 
@@ -30,14 +31,18 @@ public class CustomerService {
     private final OrderLineRepository orderLineRepository;
     private final JwtTokenManager jwtTokenManager;
     private final PasswordEncoder passwordEncoder;
+    private final CustomerMapper customerMapper;
+    private final OrderLineMapper orderLineMapper;
 
-    public CustomerService(PizzaService pizzaService, JwtTokenManager jwtTokenManager, CustomerRepository customerRepository, InvoiceRepository invoiceRepository, OrderLineRepository orderLineRepository, PasswordEncoder passwordEncoder) {
+    public CustomerService(PizzaService pizzaService, JwtTokenManager jwtTokenManager, CustomerRepository customerRepository, InvoiceRepository invoiceRepository, OrderLineRepository orderLineRepository, PasswordEncoder passwordEncoder, CustomerMapper customerMapper, OrderLineMapper orderLineMapper) {
         this.pizzaService = pizzaService;
         this.jwtTokenManager = jwtTokenManager;
         this.invoiceRepository = invoiceRepository;
         this.orderLineRepository = orderLineRepository;
         this.passwordEncoder = passwordEncoder;
         this.customerRepository = customerRepository;
+        this.customerMapper = customerMapper;
+        this.orderLineMapper = orderLineMapper;
     }
 
 
@@ -48,19 +53,19 @@ public class CustomerService {
         } else if (object instanceof String) {
             customerOpt = customerRepository.findByEmailAddress((String) object).stream().findFirst();
         } else {
-            System.err.println("ID type not supported for customer: " + object);
+            log.error("ID type not supported for customer: " + object);
             throw new IllegalArgumentException("Type d'identifiant non supporté pour le client : " + object);
         }
         return customerOpt.orElse(null);
     }
 
     public Customer addCustomer(NewCustomerDTO newCustomerDTO) {
-        Customer customer = CustomerMapper.toEntity(newCustomerDTO);
+        Customer customer = this.customerMapper.toEntity(newCustomerDTO);
         customer.setAvailable(true);
         Customer customerFound = customerRepository.findByEmailAddress(newCustomerDTO.getEmailAddress()).orElse(null);
-        if(customerFound != null){
-            if(customerFound.getAvailable()) {
-                System.err.println("Customer already exists: " + newCustomerDTO.getEmailAddress());
+        if (customerFound != null) {
+            if (customerFound.getAvailable()) {
+                log.error("Customer already exists: " + newCustomerDTO.getEmailAddress());
                 throw new CustomerException(ErrorMessages.CUSTOMER_ALREADY_EXISTS);
             } else {
                 customer.setIdCustomer(customerFound.getIdCustomer());
@@ -73,21 +78,20 @@ public class CustomerService {
 
     public void deleteCustomer(Object object) {
         Customer customer = getCustomer(object);
-        customer.setAvailable(false);
 
         List<Customer> adminCustomers = customerRepository.findByIsAdminTrue();
 
         boolean isCurrentlyAdmin = adminCustomers.stream()
                 .anyMatch(c -> c.getIdCustomer().equals(customer.getIdCustomer()));
-
-        boolean isLastAdmin = adminCustomers.size() == 1;
-
-        if (isLastAdmin && isCurrentlyAdmin) {
-            if (!customer.getIsAdmin() || !customer.getAvailable()) {
-                System.err.println("Cannot demote or delete the last admin customer: " + customer.getEmailAddress());
-                throw new CustomerException(ErrorMessages.LAST_ADMIN_CANNOT_BE_DEMOTED);
-            }
+        long countAdminAvailable = adminCustomers.stream()
+                .filter(Customer::getAvailable)
+                .count();
+        boolean isLastAdminAvailable = countAdminAvailable <= 1;
+        if (isCurrentlyAdmin && isLastAdminAvailable && customer.getAvailable()) {
+            log.error("Cannot demote or delete the last admin customer: " + customer.getEmailAddress());
+            throw new CustomerException(ErrorMessages.LAST_ADMIN_CANNOT_BE_DEMOTED);
         }
+        customer.setAvailable(false);
         customerRepository.save(customer);
     }
 
@@ -101,14 +105,14 @@ public class CustomerService {
             if (passwordEncoder.matches(password, customer.getPassword())) {
                 return jwtTokenManager.generateToken(customer);
             } else {
-                System.err.println("Invalid password attempt for customer: " + email);
+                log.error("Invalid password attempt for customer: " + email);
                 throw new CustomerException(ErrorMessages.INVALID_PASSWORD);
             }
         } else if (customer != null && !customer.getAvailable()) {
-            System.err.println("Attempt to login to an unavailable customer account: " + email);
+            log.error("Attempt to login to an unavailable customer account: " + email);
             throw new CustomerException(ErrorMessages.CUSTOMER_UNVAILABLE + " : " + email);
         } else {
-            System.err.println("Customer not found during login attempt: " + email);
+            log.error("Customer not found during login attempt: " + email);
             throw new CustomerException(ErrorMessages.CUSTOMER_NOT_FOUND + " : " + email);
         }
     }
@@ -123,7 +127,7 @@ public class CustomerService {
             for (OrderLine orderLine : orderLines) {
                 String namePizza = orderLine.getPizza().getNamePizza();
                 Map<String, BigDecimal> priceBySize = pizzaService.getPriceRangeByPizzaAtDate(namePizza, LocalDateTime.now());
-                AdaptedOrderLine adaptedOrderLineDTO = OrderLineMapper.toAdapted(orderLine);
+                AdaptedOrderLine adaptedOrderLineDTO = this.orderLineMapper.toAdapted(orderLine);
                 adaptedOrderLineDTO.setPrice(priceBySize.get(orderLine.getSize().getNameSize()));
                 if (!basket.containsKey(namePizza)) {
                     basket.put(namePizza, new ArrayList<>(List.of(adaptedOrderLineDTO)));

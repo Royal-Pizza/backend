@@ -10,6 +10,7 @@ import java.util.List;
 public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
 
     List<Ingredient> findAllByOrderByNameIngredientAsc();
+
     // Récupérer un ingrédient par son nom
     Ingredient findTopByNameIngredient(String name);
 

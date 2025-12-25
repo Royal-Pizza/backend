@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,22 +15,23 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenManager jwtTokenManager;
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
 
     public JwtAuthenticationFilter(JwtTokenManager jwtTokenManager) {
         this.jwtTokenManager = jwtTokenManager;
     }
 
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
-    
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -45,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Vérifie l’expiration
                 if (jwtTokenManager.isTokenExpired(token)) {
-                    System.err.println("Expired token detected in request to " + request.getServletPath());
+                    log.error("Expired token detected in request to " + request.getServletPath());
                     throw new CustomerException(ErrorMessages.EXPIRED_TOKEN);
                 }
 
@@ -86,7 +88,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String json = String.format("{\"message\": \"%s\"}", e.getMessage());
             response.getWriter().write(json);
 
-        } catch(ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");

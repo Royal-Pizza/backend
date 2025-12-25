@@ -6,12 +6,13 @@ import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.exception.PizzaAndIngredientException;
 import com.example.royalpizza.repository.ContainRepository;
 import com.example.royalpizza.repository.IngredientRepository;
-import com.example.royalpizza.repository.PizzaRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class IngredientService {
 
@@ -23,8 +24,7 @@ public class IngredientService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    public Ingredient getIngredient(Object object)
-    {
+    public Ingredient getIngredient(Object object) {
         if (object instanceof Long id) {
             Optional<Ingredient> ingredientOptional = ingredientRepository.findById(id);
             return ingredientOptional.orElse(null);
@@ -44,8 +44,8 @@ public class IngredientService {
 
     public void addIngredient(String ingredientName) {
         Ingredient existingIngredient = ingredientRepository.findTopByNameIngredient(ingredientName);
-        if(existingIngredient != null) {
-            System.err.println("addIngredient: ingredient already exists: " + existingIngredient.getNameIngredient());
+        if (existingIngredient != null) {
+            log.error("addIngredient: ingredient already exists: " + existingIngredient.getNameIngredient());
             throw new PizzaAndIngredientException(ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredientName);
         } else {
             Ingredient newIngredient = new Ingredient();
@@ -64,7 +64,7 @@ public class IngredientService {
         // Vérifier si un autre ingrédient a le même nom
         Ingredient sameNameIngredient = ingredientRepository.findTopByNameIngredient(ingredient.getNameIngredient());
         if (sameNameIngredient != null && !sameNameIngredient.getIdIngredient().equals(ingredient.getIdIngredient())) {
-            System.err.println("updateIngredient: ingredient with same name found: " + sameNameIngredient.getNameIngredient());
+            log.error("updateIngredient: ingredient with same name found: " + sameNameIngredient.getNameIngredient());
             throw new PizzaAndIngredientException(
                     ErrorMessages.INGREDIENT_ALREADY_EXISTS + " : " + ingredient.getNameIngredient()
             );

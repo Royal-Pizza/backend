@@ -16,5 +16,4 @@ public interface SizeRepository extends JpaRepository<Size, Long> {
     List<Size> findAllByOrderByCoeffAsc();
 
 
-
 }

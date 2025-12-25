@@ -3,28 +3,30 @@ package com.example.royalpizza.mapper;
 import com.example.royalpizza.DTO.AdaptedOrderLine;
 import com.example.royalpizza.DTO.OrderLineDTO;
 import com.example.royalpizza.entity.OrderLine;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-public class OrderLineMapper {
+@Mapper(componentModel = "spring")
+public interface OrderLineMapper {
 
-    // le prix n'est pas mappé ici
-    public static AdaptedOrderLine toAdapted(OrderLine orderLine) {
-        if(orderLine != null) {;
-            AdaptedOrderLine adaptedOrderLine = new AdaptedOrderLine();
-            adaptedOrderLine.setNameSize(orderLine.getSize().getNameSize());
-            adaptedOrderLine.setQuantity(orderLine.getQuantity());
-            return adaptedOrderLine;
-        }
-        else {
-            return null;
-        }
-    }
+    // On transforme l'entité en AdaptedOrderLine
+    // On va chercher le nom de la taille dans l'objet Size lié
+    @Mapping(source = "size.nameSize", target = "nameSize")
+    @Mapping(target = "price", ignore = true)
+    // On précise que le prix n'est pas mappé ici
+    AdaptedOrderLine toAdapted(OrderLine orderLine);
 
-    // OrderLineDTO without price
-    public static OrderLineDTO toDTO(OrderLine orderLine) {
-        OrderLineDTO orderLineDTO = new OrderLineDTO();
-        orderLineDTO.setNamePizza(orderLine.getPizza().getNamePizza());
-        orderLineDTO.setNameSize(orderLine.getSize().getNameSize());
-        orderLineDTO.setQuantity(orderLine.getQuantity());
-        return orderLineDTO;
-    }
+    // On transforme l'entité en OrderLineDTO
+    // On récupère le nom de la pizza et le nom de la taille depuis les entités liées
+    @Mapping(source = "pizza.namePizza", target = "namePizza")
+    @Mapping(source = "size.nameSize", target = "nameSize")
+    @Mapping(target = "price", ignore = true)
+    // Le DTO n'inclut pas le prix selon la logique actuelle
+    OrderLineDTO toDTO(OrderLine orderLine);
+
+    // On peut aussi définir la transformation inverse si nécessaire
+    @Mapping(target = "pizza", ignore = true)
+    @Mapping(target = "size", ignore = true)
+    @Mapping(target = "invoice", ignore = true)
+    OrderLine toEntity(OrderLineDTO orderLineDTO);
 }

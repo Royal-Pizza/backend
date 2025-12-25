@@ -3,43 +3,27 @@ package com.example.royalpizza.mapper;
 import com.example.royalpizza.DTO.CustomerDTO;
 import com.example.royalpizza.DTO.NewCustomerDTO;
 import com.example.royalpizza.entity.Customer;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import java.math.BigDecimal;
+@Mapper(componentModel = "spring")
+public interface CustomerMapper {
 
-public class CustomerMapper {
+    // On transforme l'entité en DTO
+    CustomerDTO toDTO(Customer customer);
 
+    // On transforme le DTO en entité
+    @Mapping(source = "admin", target = "isAdmin")
+    @Mapping(target = "password", ignore = true) // On ignore le mot de passe pour la sécurité
+    @Mapping(target = "invoices", ignore = true)
+    // On ignore la liste des factures
+    Customer toEntity(CustomerDTO dto);
 
-    public static CustomerDTO toDTO(Customer customer) {
-        if (customer == null) return null;
-        CustomerDTO dto = new CustomerDTO();
-        dto.setEmailAddress(customer.getEmailAddress());
-        dto.setFirstName(customer.getFirstName());
-        dto.setLastName(customer.getLastName());
-        dto.setWallet(customer.getWallet());
-        dto.setAdmin(customer.getIsAdmin());
-        return dto;
-    }
-
-    public static Customer toEntity(CustomerDTO dto) {
-        if (dto == null) return null;
-        Customer customer = new Customer();
-        customer.setFirstName(dto.getFirstName());
-        customer.setLastName(dto.getLastName());
-        customer.setEmailAddress(dto.getEmailAddress());
-        customer.setWallet(dto.getWallet());
-        customer.setIsAdmin(dto.isAdmin());
-        // le mot de passe n'est pas dans le DTO, à changer dans le service
-        return customer;
-    }
-
-    public static Customer toEntity(NewCustomerDTO dto) {
-        if (dto == null) return null;
-        Customer customer = new Customer();
-        customer.setFirstName(dto.getFirstName());
-        customer.setLastName(dto.getLastName());
-        customer.setEmailAddress(dto.getEmailAddress());
-        customer.setWallet(BigDecimal.valueOf(100.00));
-        customer.setIsAdmin(false);
-        return customer;
-    }
+    // On crée une entité à partir d'un nouveau client (inscription)
+    @Mapping(target = "idCustomer", ignore = true)
+    @Mapping(target = "wallet", constant = "100.00") // On fixe le portefeuille par défaut
+    @Mapping(target = "isAdmin", constant = "false") // On définit le rôle admin à faux par défaut
+    @Mapping(target = "available", constant = "true") // On active le compte par défaut
+    @Mapping(target = "invoices", ignore = true)
+    Customer toEntity(NewCustomerDTO dto);
 }

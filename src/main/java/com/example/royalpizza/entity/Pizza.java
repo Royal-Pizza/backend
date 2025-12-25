@@ -26,7 +26,8 @@ public class Pizza {
     private boolean available;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true) // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans pizza associée)
+    @OneToMany(mappedBy = "pizza", cascade = CascadeType.ALL, orphanRemoval = true)
+    // cascade permet de propager les opérations et orphanRemoval supprime les lignes orphelines (ligne orphelines = lignes sans pizza associée)
     private List<Contain> contains;
 
 }

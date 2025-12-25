@@ -6,14 +6,15 @@ import com.example.royalpizza.DTO.UpdatedPizzaDTO;
 import com.example.royalpizza.exception.CustomerException;
 import com.example.royalpizza.exception.ErrorMessages;
 import com.example.royalpizza.service.PizzaService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/pizzas")
 public class PizzaController {
@@ -35,14 +36,14 @@ public class PizzaController {
     @GetMapping("/all")
     public List<PizzaDTO> getAllPizzas() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            System.err.println("Unauthorized access attempt to /pizzas/all");
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            log.error("Unauthorized access attempt to /pizzas/all");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /pizzas/all");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /pizzas/all");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         List<PizzaDTO> pizzasDto = pizzaService.getAllPizzasDTO();
@@ -54,24 +55,24 @@ public class PizzaController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /pizzas/add");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /pizzas/add");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         pizzaService.addPizza(newPizzaDTO);
     }
 
     @PostMapping("/update")
-        public void updatePizza(@RequestBody UpdatedPizzaDTO updatedPizzaDTO) {
+    public void updatePizza(@RequestBody UpdatedPizzaDTO updatedPizzaDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
-            System.err.println("Unauthorized access attempt to /pizzas/update");
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            log.error("Unauthorized access attempt to /pizzas/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        if(!isAdmin) {
-            System.err.println("Unauthorized access attempt to /pizzas/update");
+        if (!isAdmin) {
+            log.error("Unauthorized access attempt to /pizzas/update");
             throw new CustomerException(ErrorMessages.NOT_AUTHORIZED);
         }
         pizzaService.updatePizza(updatedPizzaDTO);

@@ -28,10 +28,10 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")                        // tous les endpoints
                         .allowedOrigins(
-                        "http://localhost:4200",
-                        "http://frontend-app",
-                        "http://127.0.0.1:4200"
-                )
+                                "http://localhost:4200",
+                                "http://frontend-app",
+                                "http://127.0.0.1:4200"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // méthodes autorisées
                         .allowedHeaders("*")                      // tous les headers autorisés
                         .allowCredentials(true);                 // si cookies/auth nécessaires
@@ -45,7 +45,8 @@ public class CorsConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> {}) // active la configuration CORS définie par WebMvcConfigurer
+                .cors(cors -> {
+                }) // active la configuration CORS définie par WebMvcConfigurer
                 .csrf(csrf -> csrf.disable()) // désactive CSRF pour API REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(

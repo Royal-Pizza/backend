@@ -4,11 +4,13 @@ import com.example.royalpizza.entity.OrderLine;
 import com.example.royalpizza.entity.Size;
 import com.example.royalpizza.repository.OrderLineRepository;
 import com.example.royalpizza.repository.SizeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class SizeService {
 
@@ -19,8 +21,8 @@ public class SizeService {
         this.sizeRepository = sizeRepository;
         this.orderLineRepository = orderLineRepository;
     }
-    public Size getSize(Object object)
-    {
+
+    public Size getSize(Object object) {
         if (object instanceof Long id) {
             Optional<Size> sizeOptional = sizeRepository.findById(id);
             return sizeOptional.orElse(null);
